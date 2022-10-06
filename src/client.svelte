@@ -3,7 +3,15 @@
   import type { Server, Channel, Message } from "revolt.js";
   import { afterUpdate } from "svelte";
   import { clearAllBodyScrollLocks, disableBodyScroll } from "body-scroll-lock";
-  import { Settings, Logout, ChevronLeft, ChevronRight, Hash, Volume } from "tabler-icons-svelte";
+  import {
+    Settings,
+    Logout,
+    ChevronLeft,
+    ChevronRight,
+    Hash,
+    Volume,
+    Refresh,
+  } from "tabler-icons-svelte";
 
   function logout() {
     localStorage.removeItem("session");
@@ -143,6 +151,9 @@
           style="background-color:{themeSettings['tooltip']};"
         >
           <div class="cursor-pointer mr-2"><Settings size={28} /></div>
+          <div class="cursor-pointer mr-2" on:click={() => window.location.reload()}>
+            <Refresh size={28} />
+          </div>
           <div
             class="cursor-pointer"
             on:click={() => confirm("Are you sure you want to log out?") && logout()}
