@@ -145,7 +145,8 @@
     </div>
 
     <div
-      class="absolute right-3 top-3 p-2 rounded-full bg-black w-3 h-3"
+      class="absolute right-3 top-3 p-2 rounded-full bg-black w-8 h-8"
+      style="background-color:{themeSettings.tooltip};"
       on:click={() => (LIST_COLLAPSED = !LIST_COLLAPSED)}
     >
       {#if LIST_COLLAPSED}
