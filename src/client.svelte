@@ -32,6 +32,7 @@
   let inputtedMessage = "";
   let SelectedServer: Server, SelectedChannel: Channel;
   let MessageCache: { [key: string]: Message[] } = {};
+  let PaneMessages: HTMLDivElement;
   let ListServers: HTMLDivElement, ListChannels: HTMLDivElement, ListMessages: HTMLDivElement;
 
   const client = new Client();
@@ -63,6 +64,34 @@
     previous = document.body.innerHTML;
     clearAllBodyScrollLocks();
     [ListServers, ListChannels, ListMessages].forEach((e) => e && disableBodyScroll(e));
+  });
+
+  let startedDragging: [number, number] | null = null;
+  let curPos: [number, number] | null = null;
+  let isSliding = false;
+  window.addEventListener("touchstart", (e) => {
+    isSliding = false;
+    startedDragging = [e.changedTouches[0].pageX, e.changedTouches[0].pageY];
+  });
+  window.addEventListener("touchmove", (e) => {
+    curPos = [e.changedTouches[0].pageX, e.changedTouches[0].pageY];
+    if (!startedDragging) startedDragging = [...curPos];
+    if (
+      Math.abs(curPos[1] - startedDragging[1]) <= 15 &&
+      (LIST_COLLAPSED ? curPos[0] - startedDragging[0] >= 20 : startedDragging[0] - curPos[0] >= 20)
+    )
+      isSliding = true;
+    if (isSliding) {
+      const x = curPos[0];
+      PaneMessages.style.left = `${Math.max(0, Math.min(window.innerWidth, x))}px`;
+    }
+  });
+  window.addEventListener("touchend", (e) => {
+    const left = Number(PaneMessages.style.left.replace("px", ""));
+    LIST_COLLAPSED = left <= window.innerWidth / (LIST_COLLAPSED ? 4 : 2);
+    PaneMessages.style.left = LIST_COLLAPSED ? "" : "100%";
+    startedDragging = curPos = null;
+    isSliding = false;
   });
 </script>
 
@@ -169,6 +198,7 @@
       style="{LIST_COLLAPSED ? '' : 'left: 100%;'}background-color:{themeSettings[
         'primary-background'
       ]}"
+      bind:this={PaneMessages}
     >
       {#if SelectedChannel}
         <div class="overflow-y-auto flex-1 flex flex-col-reverse" bind:this={ListMessages}>
