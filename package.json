@@ -1,5 +1,5 @@
 {
-  "name": "svelte-daisyui-template",
+  "name": "revolt-phone-pwa",
   "version": "1.0.0",
   "description": "Svelte, TypeScript, and DaisyUI template.",
   "main": "serverDist/build.js",
@@ -10,14 +10,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/itzTheMeow/svelte-daisyui-template.git"
+    "url": "git+https://github.com/itzTheMeow/revolt-phone-pwa.git"
   },
   "author": "Meow",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/itzTheMeow/svelte-daisyui-template/issues"
+    "url": "https://github.com/itzTheMeow/revolt-phone-pwa/issues"
   },
-  "homepage": "https://github.com/itzTheMeow/svelte-daisyui-template#readme",
+  "homepage": "https://github.com/itzTheMeow/revolt-phone-pwa#readme",
   "dependencies": {
     "@tsconfig/svelte": "^3.0.0",
     "@types/express": "^4.17.13",
