@@ -1,8 +1,9 @@
 <script lang="ts">
   import { Client } from "revolt.js";
   import type { Server, Channel, Message } from "revolt.js";
-  import { afterUpdate, onMount } from "svelte";
-  import { clearAllBodyScrollLocks, disableBodyScroll, enableBodyScroll } from "body-scroll-lock";
+  import { afterUpdate } from "svelte";
+  import { clearAllBodyScrollLocks, disableBodyScroll } from "body-scroll-lock";
+  import { Settings, Logout, ChevronLeft, ChevronRight } from "tabler-icons-svelte";
 
   function logout() {
     localStorage.removeItem("session");
@@ -61,50 +62,64 @@
 {:then _}
   <div class="w-screen h-screen overflow-hidden" style="color:{themeSettings['foreground']};">
     <div class="absolute top-0 left-0 h-full w-full flex">
-      <div
-        class="bg-slate-800 overflow-y-auto"
-        style="width:40%;background-color:{themeSettings['background']}"
-        bind:this={ListServers}
-      >
-        {#each [...client.servers.values()].sort( (s1, s2) => (s1.name.toLowerCase() > s2.name.toLowerCase() ? 1 : -1) ) as server}
+      <div class="flex flex-col w-full">
+        <div class="flex flex-1 w-full">
           <div
-            class="flex items-center p-2 mb-2 last:mb-0 bg-slate-900 cursor-pointer"
-            on:click={() => (SelectedServer = server)}
+            class="bg-slate-800 overflow-y-auto"
+            style="width:40%;max-width:25rem;background-color:{themeSettings['background']}"
+            bind:this={ListServers}
           >
-            <div class="avatar mr-2">
-              <div class="w-5 rounded-full">
-                <img src={server.generateIconURL({ size: 64 })} alt="" />
-              </div>
-            </div>
-            <div class="overflow-hidden overflow-ellipsis whitespace-pre">{server.name}</div>
-          </div>
-        {/each}
-      </div>
-      <div
-        class="bg-slate-700 overflow-y-auto"
-        style="width:60%;background-color:{themeSettings['secondary-background']}"
-        bind:this={ListChannels}
-      >
-        {#if SelectedServer}
-          {#each SelectedServer.orderedChannels as category}
-            <div>{category.title}</div>
-            {#each category.channels as channel}
+            {#each [...client.servers.values()].sort( (s1, s2) => (s1.name.toLowerCase() > s2.name.toLowerCase() ? 1 : -1) ) as server}
               <div
-                class="cursor-pointer"
-                on:click={async () => {
-                  SelectedChannel = channel;
-                  LIST_COLLAPSED = true;
-                  if (!MessageCache[SelectedChannel._id]?.length)
-                    MessageCache[SelectedChannel._id] = await channel.fetchMessages({ limit: 100 });
-                }}
+                class="flex items-center p-2 m-2 rounded bg-black bg-opacity-20 cursor-pointer"
+                style="background-color:{themeSettings['hover']};"
+                on:click={() => (SelectedServer = server)}
               >
-                {channel.name}
+                <div class="avatar mr-2">
+                  <div class="w-5 rounded-full">
+                    <img src={server.generateIconURL({ size: 64 })} alt="" />
+                  </div>
+                </div>
+                <div class="overflow-hidden overflow-ellipsis whitespace-pre">{server.name}</div>
               </div>
             {/each}
-          {/each}
-        {:else}
-          Select a server!
-        {/if}
+          </div>
+          <div
+            class="bg-slate-700 overflow-y-auto flex-1"
+            style="background-color:{themeSettings['secondary-background']}"
+            bind:this={ListChannels}
+          >
+            {#if SelectedServer}
+              {#each SelectedServer.orderedChannels as category}
+                <div>{category.title}</div>
+                {#each category.channels as channel}
+                  <div
+                    class="cursor-pointer"
+                    on:click={async () => {
+                      SelectedChannel = channel;
+                      LIST_COLLAPSED = true;
+                      if (!MessageCache[SelectedChannel._id]?.length)
+                        MessageCache[SelectedChannel._id] = await channel.fetchMessages({
+                          limit: 100,
+                        });
+                    }}
+                  >
+                    {channel.name}
+                  </div>
+                {/each}
+              {/each}
+            {:else}
+              Select a server!
+            {/if}
+          </div>
+        </div>
+        <div
+          class="h-10 flex items-center justify-center bg-slate-900 cursor-pointer"
+          style="background-color:{themeSettings['secondary-header']};"
+        >
+          <div class="mr-2"><Settings size={28} /></div>
+          <div><Logout size={28} /></div>
+        </div>
       </div>
     </div>
     <div
@@ -145,14 +160,16 @@
     </div>
 
     <div
-      class="absolute right-3 top-3 p-2 rounded-full bg-black w-8 h-8"
+      class="absolute {LIST_COLLAPSED
+        ? 'left-3'
+        : 'right-3'} top-3 p-2 rounded-full bg-black flex items-center justify-center cursor-pointer aspect-square"
       style="background-color:{themeSettings.tooltip};"
       on:click={() => (LIST_COLLAPSED = !LIST_COLLAPSED)}
     >
       {#if LIST_COLLAPSED}
-        {">"}
+        <ChevronLeft />
       {:else}
-        {"<"}
+        <ChevronRight />
       {/if}
     </div>
   </div>
