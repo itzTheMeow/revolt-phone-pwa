@@ -41,9 +41,10 @@
       localStorage.setItem(
         "theme",
         JSON.stringify(
-          (themeSettings = JSON.parse((await client.syncFetchSettings(["theme"])).theme[1])[
-            "appearance:theme:overrides"
-          ])
+          (themeSettings =
+            JSON.parse((await client.syncFetchSettings(["theme"])).theme[1])[
+              "appearance:theme:overrides"
+            ] || {})
         )
       );
     } catch {}
