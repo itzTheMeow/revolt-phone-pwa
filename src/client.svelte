@@ -3,7 +3,14 @@
   import type { Server, Channel, Message } from "revolt.js";
   import { afterUpdate } from "svelte";
   import { clearAllBodyScrollLocks, disableBodyScroll } from "body-scroll-lock";
-  import { Settings, Logout, ChevronLeft, ChevronRight } from "tabler-icons-svelte";
+  import {
+    Settings,
+    Logout,
+    ChevronLeft,
+    ChevronRight,
+    Hash,
+    Speakerphone,
+  } from "tabler-icons-svelte";
 
   function logout() {
     localStorage.removeItem("session");
@@ -62,10 +69,10 @@
 {:then _}
   <div class="w-screen h-screen overflow-hidden" style="color:{themeSettings['foreground']};">
     <div class="absolute top-0 left-0 h-full w-full flex">
-      <div class="flex flex-col w-full">
-        <div class="flex flex-1 w-full">
+      <div class="flex flex-col h-full w-full">
+        <div class="flex flex-1 h-full w-full">
           <div
-            class="bg-slate-800 overflow-y-auto"
+            class="bg-slate-800 overflow-y-auto h-full"
             style="width:40%;max-width:25rem;background-color:{themeSettings['background']}"
             bind:this={ListServers}
           >
@@ -85,16 +92,27 @@
             {/each}
           </div>
           <div
-            class="bg-slate-700 overflow-y-auto flex-1"
+            class="bg-slate-700 overflow-y-auto flex-1 h-full"
             style="background-color:{themeSettings['secondary-background']}"
             bind:this={ListChannels}
           >
             {#if SelectedServer}
               {#each SelectedServer.orderedChannels as category}
-                <div>{category.title}</div>
+                {#if SelectedServer.orderedChannels.indexOf(category) && category.title !== "Default"}
+                  <div
+                    class="text-lg text-primary ml-2 mb-1 font-bold"
+                    style="color:{themeSettings.accent};"
+                  >
+                    {category.title}
+                  </div>
+                {/if}
                 {#each category.channels as channel}
                   <div
-                    class="cursor-pointer"
+                    class="cursor-pointer m-1.5 p-2 rounded flex items-center box-border"
+                    style="background-color:{themeSettings['hover']};{SelectedChannel?._id ==
+                    channel._id
+                      ? `border: 1px solid ${themeSettings['accent']};`
+                      : ''}"
                     on:click={async () => {
                       SelectedChannel = channel;
                       LIST_COLLAPSED = true;
@@ -104,7 +122,21 @@
                         });
                     }}
                   >
-                    {channel.name}
+                    {#if channel.icon}
+                      <img
+                        src={channel.generateIconURL()}
+                        width="20"
+                        height="20"
+                        class="object-cover aspect-square"
+                        alt=""
+                        crossorigin="anonymous"
+                      />
+                    {:else if channel.channel_type == "TextChannel"}
+                      <Hash size={20} />
+                    {:else if channel.channel_type == "VoiceChannel"}
+                      <Speakerphone size={20} />
+                    {/if}
+                    <span class="ml-1">{channel.name}</span>
                   </div>
                 {/each}
               {/each}
