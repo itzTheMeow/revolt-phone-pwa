@@ -3,14 +3,7 @@
   import type { Server, Channel, Message } from "revolt.js";
   import { afterUpdate } from "svelte";
   import { clearAllBodyScrollLocks, disableBodyScroll } from "body-scroll-lock";
-  import {
-    Settings,
-    Logout,
-    ChevronLeft,
-    ChevronRight,
-    Hash,
-    Speakerphone,
-  } from "tabler-icons-svelte";
+  import { Settings, Logout, ChevronLeft, ChevronRight, Hash, Volume } from "tabler-icons-svelte";
 
   function logout() {
     localStorage.removeItem("session");
@@ -70,7 +63,7 @@
   <div class="w-screen h-screen overflow-hidden" style="color:{themeSettings['foreground']};">
     <div class="absolute top-0 left-0 h-full w-full flex">
       <div class="flex flex-col h-full w-full">
-        <div class="flex flex-1 h-full w-full">
+        <div class="flex flex-1 w-full" style="height:calc(100% - 2.5rem);">
           <div
             class="bg-slate-800 overflow-y-auto h-full"
             style="width:40%;max-width:25rem;background-color:{themeSettings['background']}"
@@ -134,7 +127,7 @@
                     {:else if channel.channel_type == "TextChannel"}
                       <Hash size={20} />
                     {:else if channel.channel_type == "VoiceChannel"}
-                      <Speakerphone size={20} />
+                      <Volume size={20} />
                     {/if}
                     <span class="ml-1">{channel.name}</span>
                   </div>
@@ -146,11 +139,16 @@
           </div>
         </div>
         <div
-          class="h-10 flex items-center justify-center bg-slate-900 cursor-pointer"
-          style="background-color:{themeSettings['secondary-header']};"
+          class="h-10 flex items-center justify-center bg-slate-900"
+          style="background-color:{themeSettings['tooltip']};"
         >
-          <div class="mr-2"><Settings size={28} /></div>
-          <div><Logout size={28} /></div>
+          <div class="cursor-pointer mr-2"><Settings size={28} /></div>
+          <div
+            class="cursor-pointer"
+            on:click={() => confirm("Are you sure you want to log out?") && logout()}
+          >
+            <Logout size={28} />
+          </div>
         </div>
       </div>
     </div>
