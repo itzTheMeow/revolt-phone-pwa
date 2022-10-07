@@ -235,7 +235,7 @@
             {#each MessageCache[SelectedChannel._id].slice(-75) as message}
               <div class="mb-3 last:mb-0">
                 <div>{message.author?.username}</div>
-                <div>> {message.content}</div>
+                <div class="whitespace-pre-wrap">> {message.content}</div>
               </div>
             {/each}
           {:else}
