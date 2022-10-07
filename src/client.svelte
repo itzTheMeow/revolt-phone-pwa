@@ -11,7 +11,7 @@
     Hash,
     Volume,
     Refresh,
-    Map2,
+    ArrowBigRightLine,
   } from "tabler-icons-svelte";
 
   function logout() {
@@ -74,6 +74,14 @@
     clearAllBodyScrollLocks();
     [ListServers, ListChannels, ListMessages].forEach((e) => e && disableBodyScroll(e));
   });
+
+  function sendMessage() {
+    if (!SelectedChannel || !inputtedMessage) return;
+    SelectedChannel.sendMessage({
+      content: inputtedMessage,
+    });
+    inputtedMessage = "";
+  }
 
   let startedDragging: [number, number] | null = null;
   let curPos: [number, number] | null = null;
@@ -228,19 +236,25 @@
             ...
           {/if}
         </div>
-        <input
-          class="bg-slate-800 h-12"
+        <div
+          class="bg-slate-800 h-12 flex"
           style="background-color:{themeSettings['message-box']};"
-          bind:value={inputtedMessage}
-          on:keyup={(e) => {
-            if (e.key == "Enter") {
-              SelectedChannel.sendMessage({
-                content: inputtedMessage,
-              });
-              inputtedMessage = "";
-            }
-          }}
-        />
+        >
+          <input
+            class="flex-1 bg-inherit"
+            bind:value={inputtedMessage}
+            on:keyup={(e) => {
+              if (e.key == "Enter") sendMessage();
+            }}
+          />
+          <div
+            class="btn btn-square btn-primary rounded-none"
+            style="background-color:{themeSettings['accent']};"
+            on:click={sendMessage}
+          >
+            <ArrowBigRightLine />
+          </div>
+        </div>
       {:else}
         Select a channel!
       {/if}
