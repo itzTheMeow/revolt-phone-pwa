@@ -33,7 +33,7 @@
   let inputtedMessage = "";
   let SelectedServer: Server, SelectedChannel: Channel;
   let MessageCache: { [key: string]: Message[] } = {};
-  let PaneMessages: HTMLDivElement;
+  let PaneMessages: HTMLDivElement, sendButton: HTMLDivElement;
   let ListServers: HTMLDivElement, ListChannels: HTMLDivElement, ListMessages: HTMLDivElement;
   const pushMessages = (id: string, msgs: Message[]) => {
     MessageCache[id] = (MessageCache[id] || []).filter((c) => !msgs.find((m) => m._id == c._id));
@@ -77,8 +77,14 @@
 
   function sendMessage() {
     if (!SelectedChannel || !inputtedMessage) return;
+    const fc = sendButton.firstElementChild as HTMLDivElement;
+    sendButton.classList.add("loading");
+    fc.style.display = "none";
     SelectedChannel.sendMessage({
       content: inputtedMessage,
+    }).then(() => {
+      sendButton.classList.remove("loading");
+      fc.style.display = "";
     });
     inputtedMessage = "";
   }
@@ -251,6 +257,7 @@
             class="btn btn-square btn-primary rounded-none"
             style="background-color:{themeSettings['accent']};"
             on:click={sendMessage}
+            bind:this={sendButton}
           >
             <ArrowBigRightLine />
           </div>
