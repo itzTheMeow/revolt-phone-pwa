@@ -138,11 +138,7 @@
               >
                 <div class="avatar mr-2">
                   <div class="w-5 rounded-full">
-                    <img
-                      src={server.generateIconURL({ max_side: 256 })}
-                      alt=""
-                      crossorigin="anonymous"
-                    />
+                    <img src={server.generateIconURL()} alt="" crossorigin="anonymous" />
                   </div>
                 </div>
                 <div class="overflow-hidden overflow-ellipsis whitespace-pre">{server.name}</div>
@@ -188,7 +184,7 @@
                   >
                     {#if channel.icon}
                       <img
-                        src={channel.generateIconURL({ max_side: 256 })}
+                        src={channel.generateIconURL()}
                         loading="lazy"
                         width="20"
                         height="20"
