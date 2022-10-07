@@ -60,6 +60,7 @@
 
   let previous = document.body.innerHTML;
   afterUpdate(() => {
+    return;
     if (previous == document.body.innerHTML) return;
     previous = document.body.innerHTML;
     clearAllBodyScrollLocks();
