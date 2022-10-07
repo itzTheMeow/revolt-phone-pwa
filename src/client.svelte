@@ -231,7 +231,7 @@
       bind:this={PaneMessages}
     >
       {#if SelectedChannel}
-        <div class="overflow-y-auto flex-1 flex flex-col" bind:this={ListMessages}>
+        <div class="overflow-y-auto flex-1 flex flex-col break-words" bind:this={ListMessages}>
           {#if MessageCache[SelectedChannel._id]?.length}
             {#each MessageCache[SelectedChannel._id].slice(-75) as message}
               <div class="mb-3 last:mb-0">
