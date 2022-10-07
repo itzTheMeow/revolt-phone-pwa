@@ -11,6 +11,7 @@
     Hash,
     Volume,
     Refresh,
+    Map2,
   } from "tabler-icons-svelte";
 
   function logout() {
@@ -34,6 +35,12 @@
   let MessageCache: { [key: string]: Message[] } = {};
   let PaneMessages: HTMLDivElement;
   let ListServers: HTMLDivElement, ListChannels: HTMLDivElement, ListMessages: HTMLDivElement;
+  const pushMessages = (id: string, msgs: Message[]) => {
+    MessageCache[id] = (MessageCache[id] || []).filter((c) => !msgs.find((m) => m._id == c._id));
+    MessageCache[id].push(...msgs);
+    MessageCache[id].sort((m1, m2) => m1.createdAt - m2.createdAt);
+    if (SelectedChannel?._id == id) MessageCache = MessageCache;
+  };
 
   const client = new Client();
   const clientReady = new Promise((r) => client.once("ready", () => r(void 0)));
@@ -51,15 +58,17 @@
     } catch {}
   });
   client.on("message", (message) => {
-    if (MessageCache[message.channel_id]) {
-      MessageCache[message.channel_id].unshift(message);
-      if (SelectedChannel?._id == message.channel_id) MessageCache = MessageCache;
-    }
+    if (MessageCache[message.channel_id]) pushMessages(message.channel_id, [message]);
   });
   client.useExistingSession(JSON.parse(session)).catch(() => logout());
 
   let previous = document.body.innerHTML;
+  let pendBottom = false;
   afterUpdate(() => {
+    if (pendBottom) {
+      if (ListMessages) ListMessages.scrollTop = 9999;
+      pendBottom = false;
+    }
     if (previous == document.body.innerHTML) return;
     previous = document.body.innerHTML;
     clearAllBodyScrollLocks();
@@ -147,10 +156,16 @@
                     on:click={async () => {
                       SelectedChannel = channel;
                       LIST_COLLAPSED = true;
-                      if (!MessageCache[SelectedChannel._id]?.length)
-                        MessageCache[SelectedChannel._id] = await channel.fetchMessages({
-                          limit: 100,
-                        });
+                      pendBottom = true;
+                      if (!MessageCache[SelectedChannel._id]?.length) {
+                        pushMessages(
+                          SelectedChannel._id,
+                          await channel.fetchMessages({
+                            limit: 100,
+                          })
+                        );
+                        pendBottom = true;
+                      }
                     }}
                   >
                     {#if channel.icon}
@@ -201,9 +216,9 @@
       bind:this={PaneMessages}
     >
       {#if SelectedChannel}
-        <div class="overflow-y-auto flex-1 flex flex-col-reverse" bind:this={ListMessages}>
+        <div class="overflow-y-auto flex-1 flex flex-col" bind:this={ListMessages}>
           {#if MessageCache[SelectedChannel._id]?.length}
-            {#each MessageCache[SelectedChannel._id] as message}
+            {#each MessageCache[SelectedChannel._id].slice(-75) as message}
               <div class="mb-3 last:mb-0">
                 <div>{message.author?.username}</div>
                 <div>> {message.content}</div>
