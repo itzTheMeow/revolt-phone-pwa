@@ -65,10 +65,6 @@
   let selectInput: HTMLInputElement | null = null;
   let previous = document.body.innerHTML;
   let pendBottom = false;
-  beforeUpdate(() => {
-    if (!selectInput && document.activeElement?.tagName == "INPUT")
-      selectInput = document.activeElement as HTMLInputElement;
-  });
   afterUpdate(() => {
     if (pendBottom) {
       if (ListMessages) ListMessages.scrollTop = 9999;
