@@ -1,7 +1,7 @@
 <script lang="ts">
   import { Client } from "revolt.js";
   import type { Server, Channel, Message } from "revolt.js";
-  import { afterUpdate } from "svelte";
+  import { afterUpdate, beforeUpdate } from "svelte";
   import { clearAllBodyScrollLocks, disableBodyScroll } from "body-scroll-lock";
   import {
     Settings,
@@ -33,7 +33,7 @@
   let inputtedMessage = "";
   let SelectedServer: Server, SelectedChannel: Channel;
   let MessageCache: { [key: string]: Message[] } = {};
-  let PaneMessages: HTMLDivElement, sendButton: HTMLDivElement;
+  let PaneMessages: HTMLDivElement, MessageInput: HTMLInputElement, sendButton: HTMLDivElement;
   let ListServers: HTMLDivElement, ListChannels: HTMLDivElement, ListMessages: HTMLDivElement;
   const pushMessages = (id: string, msgs: Message[]) => {
     MessageCache[id] = (MessageCache[id] || []).filter((c) => !msgs.find((m) => m._id == c._id));
@@ -62,8 +62,13 @@
   });
   client.useExistingSession(JSON.parse(session)).catch(() => logout());
 
+  let selectInput: HTMLInputElement | null = null;
   let previous = document.body.innerHTML;
   let pendBottom = false;
+  beforeUpdate(() => {
+    if (!selectInput && document.activeElement?.tagName == "INPUT")
+      selectInput = document.activeElement as HTMLInputElement;
+  });
   afterUpdate(() => {
     if (pendBottom) {
       if (ListMessages) ListMessages.scrollTop = 9999;
@@ -73,6 +78,10 @@
     previous = document.body.innerHTML;
     clearAllBodyScrollLocks();
     [ListServers, ListChannels, ListMessages].forEach((e) => e && disableBodyScroll(e));
+    if (selectInput) {
+      selectInput.focus();
+      selectInput = null;
+    }
   });
 
   function sendMessage() {
@@ -249,6 +258,7 @@
         >
           <input
             class="flex-1 bg-inherit"
+            bind:this={MessageInput}
             bind:value={inputtedMessage}
             on:keyup={(e) => {
               if (e.key == "Enter") sendMessage();
@@ -257,7 +267,7 @@
           <div
             class="btn btn-square btn-primary rounded-none"
             style="background-color:{themeSettings['accent']};"
-            on:click={sendMessage}
+            on:click={() => ((selectInput = MessageInput), sendMessage())}
             bind:this={sendButton}
           >
             <ArrowBigRightLine />
