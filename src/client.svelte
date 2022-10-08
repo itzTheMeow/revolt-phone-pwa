@@ -123,6 +123,11 @@
   });
   window.addEventListener("touchmove", (e) => {
     if (!startedDragging) return;
+    if (
+      document.activeElement?.tagName == "INPUT" &&
+      (e.changedTouches[0].target as HTMLElement).tagName == "INPUT"
+    )
+      return;
     curPos = [e.changedTouches[0].pageX, e.changedTouches[0].pageY];
     if (
       Math.abs(curPos[1] - startedDragging[1]) <= 15 &&
