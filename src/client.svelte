@@ -77,6 +77,7 @@
       if (ListMessages) ListMessages.scrollTop = 9999;
       pendBottom = false;
     }
+    document.body.scrollTop = 9999;
     if (previous == document.body.innerHTML) return;
     previous = document.body.innerHTML;
     clearAllBodyScrollLocks();
@@ -85,7 +86,6 @@
       selectInput.focus();
       selectInput = null;
     }
-    document.body.scrollTop = 9999;
   });
 
   function sendMessage() {
