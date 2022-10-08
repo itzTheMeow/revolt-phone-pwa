@@ -74,18 +74,14 @@
   let selectInput: HTMLInputElement | null = null;
   let previous = document.body.innerHTML;
   let pendBottom = false;
-  beforeUpdate(() => {
-    document.body.scrollTop = document.body.scrollHeight;
-  });
   afterUpdate(() => {
-    document.body.scrollTop = document.body.scrollHeight;
     if (pendBottom) {
       if (ListMessages) ListMessages.scrollTop = 9999;
       pendBottom = false;
     }
     if (previous == document.body.innerHTML) return;
     previous = document.body.innerHTML;
-    clearAllBodyScrollLocks();
+    //  clearAllBodyScrollLocks();
     [ListServers, ListChannels, ListMessages].forEach((e) => e && disableBodyScroll(e));
     if (selectInput) {
       selectInput.focus();
