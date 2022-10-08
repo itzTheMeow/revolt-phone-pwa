@@ -112,7 +112,7 @@
 
   let startedDragging: [number, number] | null = null;
   let curPos: [number, number] | null = null;
-  let isSliding = false;
+  let isSliding = false; /*
   window.addEventListener("touchstart", (e) => {
     if (document.activeElement?.tagName == "INPUT") return;
     isSliding = false;
@@ -137,7 +137,7 @@
     PaneMessages.style.left = LIST_COLLAPSED ? "" : "100%";
     startedDragging = curPos = null;
     isSliding = false;
-  });
+  });*/
 </script>
 
 {#await clientReady}
