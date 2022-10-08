@@ -49,7 +49,7 @@
     if (SelectedChannel?._id == id) MessageCache = MessageCache;
   };
 
-  const client = new Client();
+  const client = new Client({ autoReconnect: true });
   const clientReady = new Promise((r) => client.once("ready", () => r(void 0)));
   client.once("ready", async () => {
     try {
@@ -261,6 +261,8 @@
         >
           <input
             class="flex-1 bg-inherit"
+            type="text"
+            autocomplete="on"
             bind:this={MessageInput}
             bind:value={inputtedMessage}
             on:keyup={(e) => {
