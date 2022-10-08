@@ -85,10 +85,17 @@
       selectInput.focus();
       selectInput = null;
     }
+    document.body.scrollTop = 9999;
   });
 
   function sendMessage() {
-    if (!SelectedChannel || !inputtedMessage) return;
+    if (!SelectedChannel || !inputtedMessage) {
+      if (selectInput) {
+        selectInput.focus();
+        selectInput = null;
+      }
+      return;
+    }
     const fc = sendButton.firstElementChild as HTMLDivElement;
     sendButton.classList.add("loading");
     fc.style.display = "none";
