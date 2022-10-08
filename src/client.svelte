@@ -1,7 +1,7 @@
 <script lang="ts">
   import { Client } from "revolt.js";
   import type { Server, Channel, Message } from "revolt.js";
-  import { afterUpdate } from "svelte";
+  import { afterUpdate, beforeUpdate } from "svelte";
   import { clearAllBodyScrollLocks, disableBodyScroll } from "body-scroll-lock";
   import {
     Settings,
@@ -74,12 +74,15 @@
   let selectInput: HTMLInputElement | null = null;
   let previous = document.body.innerHTML;
   let pendBottom = false;
+  beforeUpdate(() => {
+    document.body.scrollTop = document.body.scrollHeight;
+  });
   afterUpdate(() => {
+    document.body.scrollTop = document.body.scrollHeight;
     if (pendBottom) {
       if (ListMessages) ListMessages.scrollTop = 9999;
       pendBottom = false;
     }
-    document.body.scrollTop = 9999;
     if (previous == document.body.innerHTML) return;
     previous = document.body.innerHTML;
     clearAllBodyScrollLocks();
