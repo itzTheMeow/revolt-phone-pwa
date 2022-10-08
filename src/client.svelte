@@ -138,8 +138,8 @@
   window.addEventListener("touchend", () => {
     const left = Number(PaneMessages.style.left.replace("px", ""));
     LIST_COLLAPSED = left <= window.innerWidth / (LIST_COLLAPSED ? 4 : 2);
-    PaneMessages.style.left = LIST_COLLAPSED ? "" : "100%";
-    return;
+    const n = LIST_COLLAPSED ? "" : "100%";
+    if (PaneMessages.style.left !== n) PaneMessages.style.left = n;
     startedDragging = curPos = null;
     isSliding = false;
   });
