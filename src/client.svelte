@@ -274,6 +274,39 @@
                       )}</span>`;
                     })}
                 </div>
+                {#each message.attachments || [] as attachment}
+                  <div class="rounded mt-2" style="max-width:90%;">
+                    {#if attachment.metadata.type == "Image"}
+                      <img
+                        src={client.generateFileURL(attachment)}
+                        alt={attachment.filename}
+                        crossorigin="anonymous"
+                        loading="lazy"
+                      />
+                    {:else if attachment.metadata.type == "Video"}
+                      <!-- svelte-ignore a11y-media-has-caption -->
+                      <video
+                        src={client.generateFileURL(attachment)}
+                        alt={attachment.filename}
+                        crossorigin="anonymous"
+                        loading="lazy"
+                        controls
+                      />
+                    {:else if attachment.metadata.type == "Audio"}
+                      <audio
+                        src={client.generateFileURL(attachment)}
+                        alt={attachment.filename}
+                        crossorigin="anonymous"
+                        loading="lazy"
+                        controls
+                      />
+                    {:else}
+                      <a href={client.generateFileURL(attachment)} target="_blank"
+                        >Download {attachment.filename}</a
+                      >
+                    {/if}
+                  </div>
+                {/each}
               </div>
             {/each}
           {:else}
