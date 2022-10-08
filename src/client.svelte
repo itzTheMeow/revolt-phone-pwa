@@ -36,6 +36,13 @@
   let PaneMessages: HTMLDivElement, MessageInput: HTMLInputElement, sendButton: HTMLDivElement;
   let ListServers: HTMLDivElement, ListChannels: HTMLDivElement, ListMessages: HTMLDivElement;
   const pushMessages = (id: string, msgs: Message[]) => {
+    msgs.forEach(
+      (m) =>
+        !m.author &&
+        client.users
+          .fetch(m.author_id)
+          .then(() => SelectedChannel?._id == id && (MessageCache = MessageCache))
+    );
     MessageCache[id] = (MessageCache[id] || []).filter((c) => !msgs.find((m) => m._id == c._id));
     MessageCache[id].push(...msgs);
     MessageCache[id].sort((m1, m2) => m1.createdAt - m2.createdAt);
