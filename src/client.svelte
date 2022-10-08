@@ -13,7 +13,7 @@
     Refresh,
     ArrowBigRightLine,
   } from "tabler-icons-svelte";
-  import { escapeHTML, Matches } from "util";
+  import { escapeHTML, escapeRegex, Matches } from "util";
 
   function logout() {
     localStorage.removeItem("session");
@@ -260,12 +260,19 @@
                   {message.masquerade?.name || message.member?.nickname || message.author?.username}
                 </div>
                 <div class="whitespace-pre-wrap">
-                  > {escapeHTML(message.content || "").replace(Matches.user, (_, id) => {
-                    const u = client.users.get(id);
-                    return `<div style="color:${themeSettings["accent"]};">@${escapeHTML(
-                      u?.username || "Unknown User"
-                    )}</div>`;
-                  })}
+                  > {@html escapeHTML(message.content || "")
+                    .replace(escapeRegex(Matches.user), (_, id) => {
+                      const u = client.users.get(id);
+                      return `<span style="color:${themeSettings["accent"]};">@${escapeHTML(
+                        u?.username || "Unknown User"
+                      )}</span>`;
+                    })
+                    .replace(escapeRegex(Matches.channel), (_, id) => {
+                      const c = SelectedServer.channels.find((c) => c?._id == id);
+                      return `<span style="color:${themeSettings["accent"]};">#${escapeHTML(
+                        c?.name || "unknown-channel"
+                      )}</span>`;
+                    })}
                 </div>
               </div>
             {/each}
