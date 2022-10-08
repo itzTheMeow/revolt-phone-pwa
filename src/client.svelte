@@ -112,23 +112,27 @@
 
   let startedDragging: [number, number] | null = null;
   let curPos: [number, number] | null = null;
-  let isSliding = false; /*
+  let isSliding = false;
   window.addEventListener("touchstart", (e) => {
-    if (document.activeElement?.tagName == "INPUT") return;
-    isSliding = false;
-    startedDragging = [e.changedTouches[0].pageX, e.changedTouches[0].pageY];
+    if (document.activeElement?.tagName !== "INPUT") {
+      isSliding = false;
+      startedDragging = [e.changedTouches[0].pageX, e.changedTouches[0].pageY];
+    }
   });
   window.addEventListener("touchmove", (e) => {
-    curPos = [e.changedTouches[0].pageX, e.changedTouches[0].pageY];
-    if (!startedDragging) return;
-    if (
-      Math.abs(curPos[1] - startedDragging[1]) <= 15 &&
-      (LIST_COLLAPSED ? curPos[0] - startedDragging[0] >= 20 : startedDragging[0] - curPos[0] >= 20)
-    )
-      isSliding = true;
-    if (isSliding) {
-      const x = curPos[0];
-      PaneMessages.style.left = `${Math.max(0, Math.min(window.innerWidth, x))}px`;
+    if (startedDragging) {
+      curPos = [e.changedTouches[0].pageX, e.changedTouches[0].pageY];
+      if (
+        Math.abs(curPos[1] - startedDragging[1]) <= 15 &&
+        (LIST_COLLAPSED
+          ? curPos[0] - startedDragging[0] >= 20
+          : startedDragging[0] - curPos[0] >= 20)
+      )
+        isSliding = true;
+      if (isSliding) {
+        const x = curPos[0];
+        PaneMessages.style.left = `${Math.max(0, Math.min(window.innerWidth, x))}px`;
+      }
     }
   });
   window.addEventListener("touchend", (e) => {
@@ -137,7 +141,7 @@
     PaneMessages.style.left = LIST_COLLAPSED ? "" : "100%";
     startedDragging = curPos = null;
     isSliding = false;
-  });*/
+  });
 </script>
 
 {#await clientReady}
