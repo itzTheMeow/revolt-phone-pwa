@@ -261,7 +261,7 @@
             }}
           />
           <div
-            class="btn btn-square btn-primary rounded-none"
+            class="btn btn-square btn-primary rounded-none border-none"
             style="background-color:{themeSettings['accent']};"
             on:click={() => ((selectInput = MessageInput), sendMessage())}
             bind:this={sendButton}
