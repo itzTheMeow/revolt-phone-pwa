@@ -1,7 +1,7 @@
 <script lang="ts">
   import { Client } from "revolt.js";
   import type { Server, Channel, Message } from "revolt.js";
-  import { afterUpdate, beforeUpdate } from "svelte";
+  import { afterUpdate } from "svelte";
   import { clearAllBodyScrollLocks, disableBodyScroll } from "body-scroll-lock";
   import {
     Settings,
@@ -13,6 +13,7 @@
     Refresh,
     ArrowBigRightLine,
   } from "tabler-icons-svelte";
+  import { escapeHTML, Matches } from "util";
 
   function logout() {
     localStorage.removeItem("session");
@@ -254,8 +255,17 @@
           {#if MessageCache[SelectedChannel._id]?.length}
             {#each MessageCache[SelectedChannel._id].slice(-75) as message}
               <div class="mb-3 last:mb-0">
-                <div>{message.masquerade?.name || message.author?.username}</div>
-                <div class="whitespace-pre-wrap">> {message.content}</div>
+                <div>
+                  {message.masquerade?.name || message.member?.nickname || message.author?.username}
+                </div>
+                <div class="whitespace-pre-wrap">
+                  > {escapeHTML(message.content || "").replace(Matches.user, (_, id) => {
+                    const u = client.users.get(id);
+                    return `<div style="color:${themeSettings["accent"]};">@${escapeHTML(
+                      u?.username || "Unknown User"
+                    )}</div>`;
+                  })}
+                </div>
               </div>
             {/each}
           {:else}
