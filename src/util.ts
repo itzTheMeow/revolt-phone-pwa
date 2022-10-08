@@ -1,8 +1,8 @@
 export function escapeHTML(txt: string) {
   return txt
+    .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
-    .replace(/&/g, "&amp;")
     .replace(/"/g, "&quot;");
 }
 export function escapeRegex(r: RegExp) {
