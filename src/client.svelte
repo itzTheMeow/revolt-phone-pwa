@@ -134,14 +134,18 @@
         PaneMessages.style.left = `${Math.max(0, Math.min(window.innerWidth, x))}px`;
       }
     }
-  }); /*
-  window.addEventListener("touchend", (e) => {
-    const left = Number(PaneMessages.style.left.replace("px", ""));
-    LIST_COLLAPSED = left <= window.innerWidth / (LIST_COLLAPSED ? 4 : 2);
-    PaneMessages.style.left = LIST_COLLAPSED ? "" : "100%";
-    startedDragging = curPos = null;
-    isSliding = false;
-  });*/
+  });
+  window.addEventListener(
+    "touchend",
+    (e) => {
+      const left = Number(PaneMessages.style.left.replace("px", ""));
+      LIST_COLLAPSED = left <= window.innerWidth / (LIST_COLLAPSED ? 4 : 2);
+      PaneMessages.style.left = LIST_COLLAPSED ? "" : "100%";
+      startedDragging = curPos = null;
+      isSliding = false;
+    },
+    false
+  );
 </script>
 
 {#await clientReady}
