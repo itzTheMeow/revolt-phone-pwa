@@ -114,7 +114,7 @@
   let curPos: [number, number] | null = null;
   let isSliding = false;
   window.addEventListener("touchstart", (e) => {
-    //  if (document.activeElement?.tagName == "INPUT") return;
+    if (document.activeElement?.tagName == "INPUT") return;
     isSliding = false;
     startedDragging = [e.changedTouches[0].pageX, e.changedTouches[0].pageY];
   });
