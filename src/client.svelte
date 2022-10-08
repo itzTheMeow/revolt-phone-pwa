@@ -113,12 +113,13 @@
   let curPos: [number, number] | null = null;
   let isSliding = false;
   window.addEventListener("touchstart", (e) => {
+    if (document.activeElement?.tagName == "INPUT") return;
     isSliding = false;
     startedDragging = [e.changedTouches[0].pageX, e.changedTouches[0].pageY];
   });
   window.addEventListener("touchmove", (e) => {
     curPos = [e.changedTouches[0].pageX, e.changedTouches[0].pageY];
-    if (!startedDragging) startedDragging = [...curPos];
+    if (!startedDragging) return;
     if (
       Math.abs(curPos[1] - startedDragging[1]) <= 15 &&
       (LIST_COLLAPSED ? curPos[0] - startedDragging[0] >= 20 : startedDragging[0] - curPos[0] >= 20)
