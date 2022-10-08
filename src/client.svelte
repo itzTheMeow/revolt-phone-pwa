@@ -136,12 +136,12 @@
     }
   });
   window.addEventListener("touchend", () => {
+    return;
     const left = Number(PaneMessages.style.left.replace("px", ""));
     LIST_COLLAPSED = left <= window.innerWidth / (LIST_COLLAPSED ? 4 : 2);
     PaneMessages.style.left = LIST_COLLAPSED ? "" : "100%";
     startedDragging = curPos = null;
     isSliding = false;
-    alert("end");
   });
 </script>
 
