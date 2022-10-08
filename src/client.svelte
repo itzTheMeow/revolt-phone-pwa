@@ -38,8 +38,9 @@
   let ListServers: HTMLDivElement, ListChannels: HTMLDivElement, ListMessages: HTMLDivElement;
   const pushMessages = (id: string, msgs: Message[]) => {
     msgs.forEach(
-      (m) =>
+      (m, i) =>
         !m.author &&
+        msgs.findIndex((ms) => ms.author_id == m.author_id) == i &&
         client.users
           .fetch(m.author_id)
           .then(() => SelectedChannel?._id == id && (MessageCache = MessageCache))
