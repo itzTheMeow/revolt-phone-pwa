@@ -247,9 +247,9 @@
     </div>
     <div
       class="absolute top-0 left-0 w-full h-full bg-slate-600 flex flex-col"
-      style="transition:left 150ms;{LIST_COLLAPSED
-        ? ''
-        : 'left: 100%;'}background-color:{themeSettings['primary-background']}"
+      style="{LIST_COLLAPSED ? '' : 'left: 100%;'}background-color:{themeSettings[
+        'primary-background'
+      ]}"
       bind:this={PaneMessages}
     >
       {#if SelectedChannel}
