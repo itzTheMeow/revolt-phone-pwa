@@ -176,7 +176,6 @@
                         .map((a) => a[0].toUpperCase())
                         .join("")}
                       class="before:text-sm before:font-bold before:align-text-top before:flex before:justify-center"
-                      crossorigin="anonymous"
                     />
                   </div>
                 </div>
@@ -224,12 +223,10 @@
                     {#if channel.icon}
                       <img
                         src={proxyURL(channel.generateIconURL({ max_side: 64 }), "image")}
-                        loading="lazy"
                         width="20"
                         height="20"
                         class="object-cover aspect-square"
                         alt=""
-                        crossorigin="anonymous"
                       />
                     {:else if channel.channel_type == "TextChannel"}
                       <Hash size={20} />
