@@ -100,6 +100,7 @@
       sendButton.classList.remove("loading");
       fc.style.display = "";
     });
+    pendBottom = true;
     inputtedMessage = "";
   }
 
