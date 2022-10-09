@@ -12,5 +12,6 @@ export function escapeRegex(r: RegExp) {
 export const Matches = {
   user: /<@([A-z0-9]{26})>/g,
   channel: /<#([A-z0-9]{26})>/g,
-  emoji: /:([A-z0-9]{26}):/g,
+  emojiCustom: /:([A-z0-9]{26}):/g,
+  emojiDefault: /:([A-z0-9_]+?):/g,
 };

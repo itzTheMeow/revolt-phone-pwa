@@ -36,19 +36,13 @@
   let MessageCache: { [key: string]: Message[] } = {};
   let PaneMessages: HTMLDivElement, MessageInput: HTMLInputElement, sendButton: HTMLDivElement;
   let ListServers: HTMLDivElement, ListChannels: HTMLDivElement, ListMessages: HTMLDivElement;
-  const pushMessages = (id: string, msgs: Message[]) => {
-    msgs.forEach(
-      (m, i) =>
-        !m.author &&
-        msgs.findIndex((ms) => ms.author_id == m.author_id) == i &&
-        client.users
-          .fetch(m.author_id)
-          .then(() => SelectedChannel?._id == id && (MessageCache = MessageCache))
+  const pushMessages = (channel: Channel, msgs: Message[]) => {
+    MessageCache[channel._id] = (MessageCache[channel._id] || []).filter(
+      (c) => !msgs.find((m) => m._id == c._id)
     );
-    MessageCache[id] = (MessageCache[id] || []).filter((c) => !msgs.find((m) => m._id == c._id));
-    MessageCache[id].push(...msgs);
-    MessageCache[id].sort((m1, m2) => m1.createdAt - m2.createdAt);
-    if (SelectedChannel?._id == id) MessageCache = MessageCache;
+    MessageCache[channel._id].push(...msgs);
+    MessageCache[channel._id].sort((m1, m2) => m1.createdAt - m2.createdAt);
+    if (SelectedChannel?._id == channel._id) MessageCache = MessageCache;
   };
 
   const client = new Client({ autoReconnect: true });
@@ -67,7 +61,7 @@
     } catch {}
   });
   client.on("message", (message) => {
-    if (MessageCache[message.channel_id]) pushMessages(message.channel_id, [message]);
+    if (MessageCache[message.channel_id]) pushMessages(message.channel!, [message]);
   });
   client.useExistingSession(JSON.parse(session)).catch(() => logout());
 
@@ -167,7 +161,10 @@
               <div
                 class="flex items-center p-2 m-2 rounded bg-black bg-opacity-20 cursor-pointer"
                 style="background-color:{themeSettings['hover']};"
-                on:click={() => (SelectedServer = server)}
+                on:click={() => (
+                  (SelectedServer = server),
+                  SelectedServer.fetchMembers().then(() => (MessageCache = MessageCache))
+                )}
               >
                 <div class="avatar mr-2">
                   <div class="w-5 rounded-full">
@@ -206,7 +203,7 @@
                       pendBottom = true;
                       if (!MessageCache[SelectedChannel._id]?.length) {
                         pushMessages(
-                          SelectedChannel._id,
+                          SelectedChannel,
                           await channel.fetchMessages({
                             limit: 100,
                           })
@@ -268,11 +265,16 @@
           {#if MessageCache[SelectedChannel._id]?.length}
             {#each MessageCache[SelectedChannel._id].slice(-75) as message}
               <div class="mb-3 last:mb-0">
-                <div>
+                <div
+                  class="font-semibold"
+                  style="color:{message.masquerade?.colour ||
+                    message.member?.orderedRoles.find((r) => r[1].colour)?.[1].colour ||
+                    'inherit'};"
+                >
                   {message.masquerade?.name || message.member?.nickname || message.author?.username}
                 </div>
                 <div class="whitespace-pre-wrap">
-                  > {@html escapeHTML(message.content || "")
+                  {@html escapeHTML(message.content || "")
                     .replace(escapeRegex(Matches.user), (_, id) => {
                       const u = client.users.get(id);
                       return `<span style="color:${themeSettings["accent"]};">@${escapeHTML(
@@ -284,6 +286,13 @@
                       return `<span style="color:${themeSettings["accent"]};">#${escapeHTML(
                         c?.name || "unknown-channel"
                       )}</span>`;
+                    })
+                    .replace(escapeRegex(Matches.emojiCustom), (_, id) => {
+                      const e = client.emojis.get(id);
+                      if (!e) return _;
+                      return `<img src="${e.imageURL}" class="inline object-contain ${
+                        message.content == _ ? "h-12 w-12" : "h-5 w-5"
+                      } -mx-0.5 align-middle" />`;
                     })}
                 </div>
                 {#each message.attachments || [] as attachment}
