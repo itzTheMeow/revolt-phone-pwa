@@ -32,6 +32,7 @@
   let LIST_COLLAPSED = false;
 
   let inputtedMessage = "";
+  const fetchedMembers = new Set();
   let SelectedServer: Server, SelectedChannel: Channel;
   let MessageCache: { [key: string]: Message[] } = {};
   let PaneMessages: HTMLDivElement, MessageInput: HTMLInputElement, sendButton: HTMLDivElement;
@@ -164,7 +165,9 @@
                 style="background-color:{themeSettings['hover']};"
                 on:click={() => (
                   (SelectedServer = server),
-                  SelectedServer.fetchMembers().then(() => (MessageCache = MessageCache))
+                  !fetchedMembers.has(SelectedServer._id) &&
+                    (fetchedMembers.add(SelectedServer._id),
+                    SelectedServer.fetchMembers().then(() => (MessageCache = MessageCache)))
                 )}
               >
                 <div class="avatar mr-2">
