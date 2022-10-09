@@ -11,22 +11,25 @@ export function init() {
   app.get("/proxy", async (req, res) => {
     const url = String(req.query.url);
     if (!url) return res.sendStatus(200);
-    const type = String(req.query.t) as "image";
+    const type = String(req.query.t) as "any" | "image";
     try {
+      const data = await axios.get(url, {
+        responseType: "arraybuffer",
+      });
+      const fetched = {
+        type: data.headers["content-type"],
+        buffer: Buffer.from(data.data, "binary"),
+      };
       switch (type) {
+        case "any": {
+          return res.contentType(fetched.type).end(fetched.buffer);
+        }
         case "image": {
-          const data = await axios.get(url, {
-            responseType: "arraybuffer",
-          });
-          const img = {
-            type: data.headers["content-type"],
-            buffer: Buffer.from(data.data, "binary"),
-          };
-          if (img.type == "image/webp") {
-            img.type = "image/png";
-            img.buffer = await sharp(img.buffer).png().toBuffer();
+          if (fetched.type == "image/webp") {
+            fetched.type = "image/png";
+            fetched.buffer = await sharp(fetched.buffer).png().toBuffer();
           }
-          return res.contentType(img.type).end(img.buffer);
+          return res.contentType(fetched.type).end(fetched.buffer);
         }
         default: {
           return res.sendStatus(200);

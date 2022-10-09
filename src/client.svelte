@@ -313,21 +313,18 @@
                       <img
                         src={proxyURL(client.generateFileURL(attachment), "image")}
                         alt={attachment.filename}
-                        crossorigin="anonymous"
                       />
                     {:else if attachment.metadata.type == "Video"}
                       <!-- svelte-ignore a11y-media-has-caption -->
                       <video
-                        src={client.generateFileURL(attachment)}
+                        src={proxyURL(client.generateFileURL(attachment), "any")}
                         alt={attachment.filename}
-                        crossorigin="anonymous"
                         controls
                       />
                     {:else if attachment.metadata.type == "Audio"}
                       <audio
-                        src={client.generateFileURL(attachment)}
+                        src={proxyURL(client.generateFileURL(attachment), "any")}
                         alt={attachment.filename}
-                        crossorigin="anonymous"
                         controls
                       />
                     {:else}
