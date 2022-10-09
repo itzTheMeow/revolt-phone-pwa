@@ -171,7 +171,11 @@
                   <div class="w-5 rounded-full">
                     <img
                       src={proxyURL(server.generateIconURL({ max_side: 64 }), "image")}
-                      alt=""
+                      alt={server.name
+                        .split(" ")
+                        .map((a) => a[0].toUpperCase())
+                        .join("")}
+                      class="before:text-sm before:font-bold before:align-text-top before:flex before:justify-center"
                       crossorigin="anonymous"
                     />
                   </div>
