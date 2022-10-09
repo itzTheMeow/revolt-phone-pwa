@@ -8,6 +8,9 @@ export function escapeHTML(txt: string) {
 export function escapeRegex(r: RegExp) {
   return new RegExp(escapeHTML(r.source), r.flags);
 }
+export function proxyURL(url: string = "", type: "image") {
+  return `/proxy?url=${encodeURIComponent(url)}&t=${type}`;
+}
 
 export const Matches = {
   user: /<@([A-z0-9]{26})>/g,

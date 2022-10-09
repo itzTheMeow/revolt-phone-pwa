@@ -13,7 +13,7 @@
     Refresh,
     ArrowBigRightLine,
   } from "tabler-icons-svelte";
-  import { escapeHTML, escapeRegex, Matches } from "util";
+  import { escapeHTML, escapeRegex, Matches, proxyURL } from "util";
 
   function logout() {
     localStorage.removeItem("session");
@@ -169,7 +169,11 @@
               >
                 <div class="avatar mr-2">
                   <div class="w-5 rounded-full">
-                    <img src={server.generateIconURL()} alt="" crossorigin="anonymous" />
+                    <img
+                      src={proxyURL(server.generateIconURL({ max_side: 64 }), "image")}
+                      alt=""
+                      crossorigin="anonymous"
+                    />
                   </div>
                 </div>
                 <div class="overflow-hidden overflow-ellipsis whitespace-pre">{server.name}</div>
@@ -215,7 +219,7 @@
                   >
                     {#if channel.icon}
                       <img
-                        src={channel.generateIconURL()}
+                        src={proxyURL(channel.generateIconURL({ max_side: 64 }), "image")}
                         loading="lazy"
                         width="20"
                         height="20"
@@ -300,7 +304,7 @@
                   <div class="rounded mt-2" style="max-width:90%;">
                     {#if attachment.metadata.type == "Image"}
                       <img
-                        src={client.generateFileURL(attachment)}
+                        src={proxyURL(client.generateFileURL(attachment), "image")}
                         alt={attachment.filename}
                         crossorigin="anonymous"
                         loading="lazy"
