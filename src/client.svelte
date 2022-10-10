@@ -1,7 +1,7 @@
 <script lang="ts">
   import { Client } from "revolt.js";
   import type { Server, Channel, Message } from "revolt.js";
-  import { afterUpdate, beforeUpdate } from "svelte";
+  import { afterUpdate, beforeUpdate, onMount } from "svelte";
   import { clearAllBodyScrollLocks, disableBodyScroll } from "body-scroll-lock";
   import {
     Settings,
@@ -35,6 +35,7 @@
   const fetchedMembers = new Set();
   let SelectedServer: Server, SelectedChannel: Channel;
   let MessageCache: { [key: string]: Message[] } = {};
+  let container: HTMLDivElement;
   let PaneMessages: HTMLDivElement, MessageInput: HTMLInputElement, sendButton: HTMLDivElement;
   let ListServers: HTMLDivElement, ListChannels: HTMLDivElement, ListMessages: HTMLDivElement;
   const pushMessages = (channel: Channel, msgs: Message[]) => {
@@ -105,52 +106,60 @@
     inputtedMessage = "";
   }
 
-  let startedDragging: [number, number] | null = null;
-  let curPos: [number, number] | null = null;
-  let isSliding = false;
-  window.addEventListener("touchstart", (e) => {
-    isSliding = false;
-    if (
-      document.activeElement?.tagName == "INPUT" &&
-      (e.changedTouches[0].target as HTMLElement).tagName == "INPUT"
-    )
-      return;
-    startedDragging = [e.changedTouches[0].pageX, e.changedTouches[0].pageY];
-  });
-  window.addEventListener("touchmove", (e) => {
-    if (!startedDragging) return;
-    if (
-      document.activeElement?.tagName == "INPUT" &&
-      (e.changedTouches[0].target as HTMLElement).tagName == "INPUT"
-    )
-      return;
-    curPos = [e.changedTouches[0].pageX, e.changedTouches[0].pageY];
-    if (
-      Math.abs(curPos[1] - startedDragging[1]) <= 15 &&
-      (LIST_COLLAPSED ? curPos[0] - startedDragging[0] >= 20 : startedDragging[0] - curPos[0] >= 20)
-    )
-      isSliding = true;
-    if (isSliding) {
-      const x = curPos[0];
-      PaneMessages.style.left = `${Math.max(0, Math.min(window.innerWidth, x))}px`;
-    }
-  });
-  window.addEventListener("touchend", () => {
-    if (isSliding) {
-      const left = Number(PaneMessages.style.left.replace("px", ""));
-      LIST_COLLAPSED = left <= window.innerWidth / (LIST_COLLAPSED ? 4 : 2);
-      const n = LIST_COLLAPSED ? "" : "100%";
-      if (PaneMessages.style.left !== n) PaneMessages.style.left = n;
-    }
-    startedDragging = curPos = null;
-    isSliding = false;
+  onMount(() => {
+    let startedDragging: [number, number] | null = null;
+    let curPos: [number, number] | null = null;
+    let isSliding = false;
+    container.addEventListener("touchstart", (e) => {
+      isSliding = false;
+      if (
+        document.activeElement?.tagName == "INPUT" &&
+        (e.changedTouches[0].target as HTMLElement).tagName == "INPUT"
+      )
+        return;
+      startedDragging = [e.changedTouches[0].pageX, e.changedTouches[0].pageY];
+    });
+    container.addEventListener("touchmove", (e) => {
+      if (!startedDragging) return;
+      if (
+        document.activeElement?.tagName == "INPUT" &&
+        (e.changedTouches[0].target as HTMLElement).tagName == "INPUT"
+      )
+        return;
+      curPos = [e.changedTouches[0].pageX, e.changedTouches[0].pageY];
+      if (
+        Math.abs(curPos[1] - startedDragging[1]) <= 15 &&
+        (LIST_COLLAPSED
+          ? curPos[0] - startedDragging[0] >= 20
+          : startedDragging[0] - curPos[0] >= 20)
+      )
+        isSliding = true;
+      if (isSliding) {
+        const x = curPos[0];
+        PaneMessages.style.left = `${Math.max(0, Math.min(window.innerWidth, x))}px`;
+      }
+    });
+    container.addEventListener("touchend", () => {
+      if (isSliding) {
+        const left = Number(PaneMessages.style.left.replace("px", ""));
+        LIST_COLLAPSED = left <= window.innerWidth / (LIST_COLLAPSED ? 4 : 2);
+        const n = LIST_COLLAPSED ? "" : "100%";
+        if (PaneMessages.style.left !== n) PaneMessages.style.left = n;
+      }
+      startedDragging = curPos = null;
+      isSliding = false;
+    });
   });
 </script>
 
 {#await clientReady}
   Logging in...
 {:then _}
-  <div class="w-screen h-screen overflow-hidden" style="color:{themeSettings['foreground']};">
+  <div
+    class="w-screen h-screen overflow-hidden"
+    style="color:{themeSettings['foreground']};"
+    bind:this={container}
+  >
     <div class="absolute top-0 left-0 h-full w-full flex">
       <div class="flex flex-col h-full w-full">
         <div class="flex flex-1 w-full" style="height:calc(100% - 2.5rem);">
