@@ -108,23 +108,17 @@
   let startedDragging: [number, number] | null = null;
   let curPos: [number, number] | null = null;
   let isSliding = false;
-  window.addEventListener("touchstart", (e) => {
+  document.addEventListener("pointerdown", (e) => {
     isSliding = false;
-    if (
-      document.activeElement?.tagName == "INPUT" &&
-      (e.changedTouches[0].target as HTMLElement).tagName == "INPUT"
-    )
+    if (document.activeElement?.tagName == "INPUT" && (e.target as HTMLElement).tagName == "INPUT")
       return;
-    startedDragging = [e.changedTouches[0].pageX, e.changedTouches[0].pageY];
+    startedDragging = [e.pageX, e.pageY];
   });
-  window.addEventListener("touchmove", (e) => {
+  document.addEventListener("pointermove", (e) => {
     if (!startedDragging) return;
-    if (
-      document.activeElement?.tagName == "INPUT" &&
-      (e.changedTouches[0].target as HTMLElement).tagName == "INPUT"
-    )
+    if (document.activeElement?.tagName == "INPUT" && (e.target as HTMLElement).tagName == "INPUT")
       return;
-    curPos = [e.changedTouches[0].pageX, e.changedTouches[0].pageY];
+    curPos = [e.pageX, e.pageY];
     if (
       Math.abs(curPos[1] - startedDragging[1]) <= 15 &&
       (LIST_COLLAPSED ? curPos[0] - startedDragging[0] >= 20 : startedDragging[0] - curPos[0] >= 20)
@@ -135,7 +129,7 @@
       PaneMessages.style.left = `${Math.max(0, Math.min(window.innerWidth, x))}px`;
     }
   });
-  window.addEventListener("touchend", () => {
+  document.addEventListener("pointerup", () => {
     if (isSliding) {
       const left = Number(PaneMessages.style.left.replace("px", ""));
       LIST_COLLAPSED = left <= window.innerWidth / (LIST_COLLAPSED ? 4 : 2);
@@ -357,7 +351,10 @@
           <div
             class="btn btn-square btn-primary rounded-none border-none"
             style="background-color:{themeSettings['accent']};"
-            on:click={() => ((selectInput = MessageInput), sendMessage())}
+            on:click={() => (
+              document.activeElement?.tagName !== "INPUT" && (selectInput = MessageInput),
+              sendMessage()
+            )}
             bind:this={sendButton}
           >
             <ArrowBigRightLine />
