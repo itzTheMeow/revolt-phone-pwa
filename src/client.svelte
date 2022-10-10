@@ -108,17 +108,23 @@
   let startedDragging: [number, number] | null = null;
   let curPos: [number, number] | null = null;
   let isSliding = false;
-  document.addEventListener("pointerdown", (e) => {
+  window.addEventListener("touchstart", (e) => {
     isSliding = false;
-    if (document.activeElement?.tagName == "INPUT" && (e.target as HTMLElement).tagName == "INPUT")
+    if (
+      document.activeElement?.tagName == "INPUT" &&
+      (e.changedTouches[0].target as HTMLElement).tagName == "INPUT"
+    )
       return;
-    startedDragging = [e.pageX, e.pageY];
+    startedDragging = [e.changedTouches[0].pageX, e.changedTouches[0].pageY];
   });
-  document.addEventListener("pointermove", (e) => {
+  window.addEventListener("touchmove", (e) => {
     if (!startedDragging) return;
-    if (document.activeElement?.tagName == "INPUT" && (e.target as HTMLElement).tagName == "INPUT")
+    if (
+      document.activeElement?.tagName == "INPUT" &&
+      (e.changedTouches[0].target as HTMLElement).tagName == "INPUT"
+    )
       return;
-    curPos = [e.pageX, e.pageY];
+    curPos = [e.changedTouches[0].pageX, e.changedTouches[0].pageY];
     if (
       Math.abs(curPos[1] - startedDragging[1]) <= 15 &&
       (LIST_COLLAPSED ? curPos[0] - startedDragging[0] >= 20 : startedDragging[0] - curPos[0] >= 20)
@@ -129,7 +135,7 @@
       PaneMessages.style.left = `${Math.max(0, Math.min(window.innerWidth, x))}px`;
     }
   });
-  document.addEventListener("pointerup", () => {
+  window.addEventListener("touchend", () => {
     if (isSliding) {
       const left = Number(PaneMessages.style.left.replace("px", ""));
       LIST_COLLAPSED = left <= window.innerWidth / (LIST_COLLAPSED ? 4 : 2);
