@@ -152,14 +152,14 @@
   });
 </script>
 
-{#await clientReady}
-  Logging in...
-{:then _}
-  <div
-    class="w-screen h-screen overflow-hidden"
-    style="color:{themeSettings['foreground']};"
-    bind:this={container}
-  >
+<div
+  class="w-screen h-screen overflow-hidden"
+  style="color:{themeSettings['foreground']};"
+  bind:this={container}
+>
+  {#await clientReady}
+    Logging in...
+  {:then _}
     <div class="absolute top-0 left-0 h-full w-full flex">
       <div class="flex flex-col h-full w-full">
         <div class="flex flex-1 w-full" style="height:calc(100% - 2.5rem);">
@@ -393,8 +393,8 @@
         <ChevronRight />
       {/if}
     </div>
-  </div>
-{/await}
+  {/await}
+</div>
 
 <style>
   .overflow-y-auto {
