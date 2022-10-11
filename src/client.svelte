@@ -1,8 +1,8 @@
 <script lang="ts">
   import { Client } from "revolt.js";
   import type { Server, Channel, Message } from "revolt.js";
-  import { afterUpdate, beforeUpdate, onMount } from "svelte";
-  import { clearAllBodyScrollLocks, disableBodyScroll } from "body-scroll-lock";
+  import { afterUpdate, onMount } from "svelte";
+  import { disableBodyScroll } from "body-scroll-lock";
   import {
     Settings,
     Logout,
@@ -14,11 +14,17 @@
     ArrowBigRightLine,
   } from "tabler-icons-svelte";
   import { escapeHTML, escapeRegex, Matches, proxyURL } from "util";
+  import TWEEN from "@tweenjs/tween.js";
 
   function logout() {
     localStorage.removeItem("session");
     window.location.reload();
   }
+
+  requestAnimationFrame(function animate(time: number) {
+    requestAnimationFrame(animate);
+    TWEEN.update(time);
+  });
 
   const session = localStorage.getItem("session")!;
   try {
@@ -77,8 +83,9 @@
     }
     if (previous == document.body.innerHTML) return;
     previous = document.body.innerHTML;
-    //  clearAllBodyScrollLocks();
-    [ListServers, ListChannels, ListMessages].forEach((e) => e && disableBodyScroll(e));
+    [ListServers, ListChannels, ListMessages].forEach(
+      (e) => e && disableBodyScroll(e, { allowTouchMove: () => true })
+    );
     if (selectInput) {
       selectInput.focus();
       selectInput = null;

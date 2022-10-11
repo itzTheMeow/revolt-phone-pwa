@@ -18,3 +18,8 @@ export const Matches = {
   emojiCustom: /:([A-z0-9]{26}):/g,
   emojiDefault: /:([A-z0-9_]+?):/g,
 };
+export enum ListState {
+  LEFT,
+  MIDDLE,
+  RIGHT,
+}
