@@ -1,3 +1,7 @@
+export function logout() {
+  localStorage.removeItem("session");
+  window.location.reload();
+}
 export function escapeHTML(txt: string) {
   return txt
     .replace(/&/g, "&amp;")
