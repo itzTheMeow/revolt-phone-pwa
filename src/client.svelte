@@ -78,7 +78,7 @@
   let pendBottom = false;
   afterUpdate(() => {
     if (pendBottom) {
-      if (ListMessages) ListMessages.scrollTop = 9999;
+      if (ListMessages) ListMessages.scrollTop = ListMessages.scrollHeight;
       pendBottom = false;
     }
     if (previous == document.body.innerHTML) return;
