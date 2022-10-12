@@ -78,7 +78,7 @@
   let pendBottom = false;
   afterUpdate(() => {
     if (pendBottom) {
-      if (ListMessages) ListMessages.scrollTop = ListMessages.scrollHeight;
+      if (ListMessages) ListMessages.scrollTop = ListMessages.scrollHeight * 2;
       pendBottom = false;
     }
     if (previous == document.body.innerHTML) return;
@@ -229,13 +229,11 @@
                       LIST_COLLAPSED = true;
                       pendBottom = true;
                       if (!MessageCache[SelectedChannel._id]?.length) {
-                        pushMessages(
-                          SelectedChannel,
-                          await channel.fetchMessages({
-                            limit: 100,
-                          })
-                        );
+                        const m = await channel.fetchMessages({
+                          limit: 100,
+                        });
                         pendBottom = true;
+                        pushMessages(SelectedChannel, m);
                       }
                     }}
                   >
