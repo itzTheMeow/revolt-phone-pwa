@@ -324,14 +324,17 @@
                     })}
                 </div>
                 {#each message.attachments || [] as attachment}
-                  <div class="rounded mt-2" style="max-width:90%;">
+                  <div
+                    class="rounded mt-2 block"
+                    style="max-width:90%;height:{'height' in attachment.metadata
+                      ? attachment.metadata.height + 'px'
+                      : 'auto'};"
+                  >
                     {#if attachment.metadata.type == "Image"}
                       <img
                         class="block"
                         src={proxyURL(client.generateFileURL(attachment), "image")}
                         alt={attachment.filename}
-                        style="width:{attachment.metadata.width}px;height:{attachment.metadata
-                          .height};"
                       />
                     {:else if attachment.metadata.type == "Video"}
                       <!-- svelte-ignore a11y-media-has-caption -->
@@ -340,8 +343,6 @@
                         src={proxyURL(client.generateFileURL(attachment), "any")}
                         alt={attachment.filename}
                         controls
-                        style="width:{attachment.metadata.width}px;height:{attachment.metadata
-                          .height};"
                       />
                     {:else if attachment.metadata.type == "Audio"}
                       <audio
