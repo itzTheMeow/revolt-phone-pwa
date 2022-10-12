@@ -330,8 +330,8 @@
                         class="block"
                         src={proxyURL(client.generateFileURL(attachment), "image")}
                         alt={attachment.filename}
-                        width={attachment.metadata.width}
-                        height={attachment.metadata.height}
+                        style="width:{attachment.metadata.width}px;height:{attachment.metadata
+                          .height};"
                       />
                     {:else if attachment.metadata.type == "Video"}
                       <!-- svelte-ignore a11y-media-has-caption -->
@@ -340,8 +340,8 @@
                         src={proxyURL(client.generateFileURL(attachment), "any")}
                         alt={attachment.filename}
                         controls
-                        width={attachment.metadata.width}
-                        height={attachment.metadata.height}
+                        style="width:{attachment.metadata.width}px;height:{attachment.metadata
+                          .height};"
                       />
                     {:else if attachment.metadata.type == "Audio"}
                       <audio
