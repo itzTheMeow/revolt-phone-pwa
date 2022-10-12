@@ -327,6 +327,7 @@
                   <div class="rounded mt-2" style="max-width:90%;">
                     {#if attachment.metadata.type == "Image"}
                       <img
+                        class="block"
                         src={proxyURL(client.generateFileURL(attachment), "image")}
                         alt={attachment.filename}
                         width={attachment.metadata.width}
@@ -335,6 +336,7 @@
                     {:else if attachment.metadata.type == "Video"}
                       <!-- svelte-ignore a11y-media-has-caption -->
                       <video
+                        class="block"
                         src={proxyURL(client.generateFileURL(attachment), "any")}
                         alt={attachment.filename}
                         controls
@@ -343,6 +345,7 @@
                       />
                     {:else if attachment.metadata.type == "Audio"}
                       <audio
+                        class="block"
                         src={proxyURL(client.generateFileURL(attachment), "any")}
                         alt={attachment.filename}
                         controls
