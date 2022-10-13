@@ -12,9 +12,13 @@
     Volume,
     Refresh,
     ArrowBigRightLine,
+    Paperclip,
+    ClipboardText,
+    FileUpload,
   } from "tabler-icons-svelte";
-  import { escapeHTML, escapeRegex, Matches, proxyURL } from "util";
+  import { escapeHTML, escapeRegex, Matches, proxyURL, type ThemeSettings } from "util";
   import TWEEN from "@tweenjs/tween.js";
+  import ContextMenu from "ContextMenu.svelte";
 
   function logout() {
     localStorage.removeItem("session");
@@ -33,9 +37,9 @@
     logout();
   }
 
-  // prettier-ignore
-  let themeSettings: {accent?: string;background?: string;block?: string;error?: string;foreground?: string;hover?: string;mention?: string;"message-box"?: string;"primary-background"?: string;"primary-header"?: string;"scrollbar-thumb"?: string;"secondary-background"?: string;"secondary-foreground"?: string;"secondary-header"?: string;"status-away"?: string;"status-busy"?: string;"status-invisible"?: string;"status-online"?: string;success?: string;"tertiary-background"?: string;"tertiary-foreground"?: string;warning?: string;tooltip?: string;"scrollbar-track"?: string;"status-focus"?: string;"status-streaming"?: string;light?: boolean;} = JSON.parse(localStorage.getItem("theme") || "{}");
+  let themeSettings: ThemeSettings = JSON.parse(localStorage.getItem("theme") || "{}");
   let LIST_COLLAPSED = false;
+  let fileInput: HTMLInputElement;
 
   let inputtedMessage = "";
   const fetchedMembers = new Set();
@@ -366,6 +370,14 @@
           class="bg-slate-800 h-12 flex"
           style="background-color:{themeSettings['message-box']};"
         >
+          <input type="file" class="hidden" bind:this={fileInput} />
+          <div
+            class="btn btn-square btn-primary rounded-none border-none"
+            style="background-color:{themeSettings['primary-header']};"
+            on:click={() => fileInput.click()}
+          >
+            <Paperclip />
+          </div>
           <input
             class="flex-1 bg-inherit"
             type="text"
