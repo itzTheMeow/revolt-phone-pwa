@@ -178,7 +178,7 @@
   });
   function attachLoad(e: Event) {
     const item = e.target as HTMLElement;
-    ListMessages.scrollTop += item.offsetHeight;
+    //ListMessages.scrollTop += item.getBoundingClientRect().height;
   }
 </script>
 
@@ -313,7 +313,7 @@
     >
       {#if SelectedChannel}
         <div
-          class="overflow-y-auto flex-1 flex flex-col break-words px-1.5"
+          class="overflow-y-auto flex-1 flex flex-col break-words p-1.5"
           bind:this={ListMessages}
         >
           {#if MessageCache[SelectedChannel._id]?.length}
@@ -353,7 +353,27 @@
                     })}
                 </div>
                 {#each message.attachments || [] as attachment}
-                  <div class="rounded mt-2 block" style="max-width:90%;">
+                  <div
+                    class="rounded mt-2 block"
+                    style="max-width:90vw;{['width', 'height']
+                      .map(
+                        (h) =>
+                          h +
+                          ':' +
+                          Math.floor(
+                            Math.min(
+                              //@ts-ignore
+                              (window.innerWidth * 0.9) / attachment.metadata.width,
+                              //@ts-ignore
+                              (window.innerHeight * 0.7) / attachment.metadata.height
+                            ) *
+                              //@ts-ignore
+                              attachment.metadata[h]
+                          ) +
+                          'px'
+                      )
+                      .join(';')}"
+                  >
                     {#if attachment.metadata.type == "Image"}
                       <img
                         class="block rounded"
