@@ -419,7 +419,7 @@
             class="hidden"
             bind:this={fileInput}
             multiple
-            on:input={() => {
+            on:change={() => {
               const files = [...(fileInput.files || [])];
               files.forEach((file) => {
                 if (uploadedFiles.length >= 5) return;
