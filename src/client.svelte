@@ -402,7 +402,7 @@
                   <div class="m-1.5">{file.name}</div>
                 {/if}
                 <div
-                  class="rounded absolute top-0 left-0 h-full w-full bg-black bg-opacity-40 flex items-center justify-center text-error"
+                  class="rounded absolute top-0 left-0 h-full w-full bg-black bg-opacity-25 flex items-center justify-center text-error"
                 >
                   <CircleX />
                 </div>
