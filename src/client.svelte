@@ -318,15 +318,19 @@
         >
           {#if MessageCache[SelectedChannel._id]?.length}
             {#each MessageCache[SelectedChannel._id].slice(-75) as message}
-              <div class="mb-3 last:mb-0">
-                <div
-                  class="font-semibold"
-                  style="color:{message.masquerade?.colour ||
-                    message.member?.orderedRoles.find((r) => r[1].colour)?.[1].colour ||
-                    'inherit'};"
-                >
-                  {message.masquerade?.name || message.member?.nickname || message.author?.username}
-                </div>
+              <div>
+                {#if MessageCache[SelectedChannel._id][MessageCache[SelectedChannel._id].indexOf(message) - 1]?.author_id !== message.author_id}
+                  <div
+                    class="font-semibold mt-2"
+                    style="color:{message.masquerade?.colour ||
+                      message.member?.orderedRoles.find((r) => r[1].colour)?.[1].colour ||
+                      'inherit'};"
+                  >
+                    {message.masquerade?.name ||
+                      message.member?.nickname ||
+                      message.author?.username}
+                  </div>
+                {/if}
                 <div class="whitespace-pre-wrap">
                   {@html escapeHTML(message.content || "")
                     .replace(escapeRegex(Matches.user), (_, id) => {
