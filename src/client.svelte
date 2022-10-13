@@ -176,6 +176,10 @@
       isSliding = false;
     });
   });
+  function attachLoad(e: Event) {
+    const item = e.target as HTMLElement;
+    ListMessages.scrollTop += item.offsetHeight;
+  }
 </script>
 
 <div
@@ -344,7 +348,7 @@
                     })}
                 </div>
                 {#each message.attachments || [] as attachment}
-                  <div class="rounded mt-2 block" style="max-width:90%;">
+                  <div class="rounded mt-2 block" style="max-width:90%;max-height:80vh;">
                     {#if attachment.metadata.type == "Image"}
                       <img
                         class="block rounded"
@@ -355,6 +359,7 @@
                           "image"
                         )}
                         alt={attachment.filename}
+                        on:load={attachLoad}
                       />
                     {:else if attachment.metadata.type == "Video"}
                       <!-- svelte-ignore a11y-media-has-caption -->
@@ -363,6 +368,7 @@
                         src={proxyURL(client.generateFileURL(attachment), "any")}
                         alt={attachment.filename}
                         controls
+                        on:load={attachLoad}
                       />
                     {:else if attachment.metadata.type == "Audio"}
                       <audio
@@ -370,6 +376,7 @@
                         src={proxyURL(client.generateFileURL(attachment), "any")}
                         alt={attachment.filename}
                         controls
+                        on:load={attachLoad}
                       />
                     {:else}
                       <a href={client.generateFileURL(attachment)} target="_blank"
