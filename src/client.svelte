@@ -303,7 +303,10 @@
       bind:this={PaneMessages}
     >
       {#if SelectedChannel}
-        <div class="overflow-y-auto flex-1 flex flex-col break-words p-1" bind:this={ListMessages}>
+        <div
+          class="overflow-y-auto flex-1 flex flex-col break-words p-1.5"
+          bind:this={ListMessages}
+        >
           {#if MessageCache[SelectedChannel._id]?.length}
             {#each MessageCache[SelectedChannel._id].slice(-75) as message}
               <div class="mb-3 last:mb-0">
@@ -341,16 +344,16 @@
                     })}
                 </div>
                 {#each message.attachments || [] as attachment}
-                  <div
-                    class="rounded mt-2 block"
-                    style="max-width:90%;height:{'height' in attachment.metadata
-                      ? attachment.metadata.height + 'px'
-                      : 'auto'};"
-                  >
+                  <div class="rounded mt-2 block" style="max-width:90%;">
                     {#if attachment.metadata.type == "Image"}
                       <img
-                        class="block"
-                        src={proxyURL(client.generateFileURL(attachment), "image")}
+                        class="block rounded"
+                        src={proxyURL(
+                          client.generateFileURL(attachment, {
+                            width: Math.floor(window.innerWidth * 0.9),
+                          }),
+                          "image"
+                        )}
                         alt={attachment.filename}
                       />
                     {:else if attachment.metadata.type == "Video"}
