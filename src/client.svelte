@@ -308,7 +308,7 @@
     >
       {#if SelectedChannel}
         <div
-          class="overflow-y-auto flex-1 flex flex-col break-words p-1.5"
+          class="overflow-y-auto flex-1 flex flex-col break-words px-1.5"
           bind:this={ListMessages}
         >
           {#if MessageCache[SelectedChannel._id]?.length}
@@ -348,7 +348,7 @@
                     })}
                 </div>
                 {#each message.attachments || [] as attachment}
-                  <div class="rounded mt-2 block" style="max-width:90%;max-height:80vh;">
+                  <div class="rounded mt-2 block" style="max-width:90%;">
                     {#if attachment.metadata.type == "Image"}
                       <img
                         class="block rounded"
