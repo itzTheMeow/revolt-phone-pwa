@@ -13,12 +13,12 @@
     Refresh,
     ArrowBigRightLine,
     Paperclip,
-    ClipboardText,
-    FileUpload,
+    CircleX,
   } from "tabler-icons-svelte";
-  import { escapeHTML, escapeRegex, Matches, proxyURL, type ThemeSettings } from "util";
+  import { escapeHTML, escapeRegex, Matches, proxyURL, type ThemeSettings } from "./util";
   import TWEEN from "@tweenjs/tween.js";
   import ContextMenu from "ContextMenu.svelte";
+  import { uploadAttachment } from "revolt-toolset";
 
   function logout() {
     localStorage.removeItem("session");
@@ -41,7 +41,8 @@
   let LIST_COLLAPSED = false;
   let fileInput: HTMLInputElement;
 
-  let inputtedMessage = "";
+  let inputtedMessage = "",
+    uploadedFiles: { name: string; type: string; url: string; data: File }[] = [];
   const fetchedMembers = new Set();
   let SelectedServer: Server, SelectedChannel: Channel;
   let MessageCache: { [key: string]: Message[] } = {};
@@ -96,25 +97,41 @@
     }
   });
 
-  function sendMessage() {
-    if (!SelectedChannel || !inputtedMessage) {
+  async function sendMessage() {
+    if (document.activeElement?.tagName == "INPUT")
+      selectInput = document.activeElement as HTMLInputElement;
+    if (!SelectedChannel || (!inputtedMessage && !uploadedFiles.length)) {
       if (selectInput) {
         selectInput.focus();
         selectInput = null;
       }
       return;
     }
+    const content = inputtedMessage ? inputtedMessage : null;
     const fc = sendButton.firstElementChild as HTMLDivElement;
     sendButton.classList.add("loading");
     fc.style.display = "none";
-    SelectedChannel.sendMessage({
-      content: inputtedMessage,
-    }).then(() => {
-      sendButton.classList.remove("loading");
-      fc.style.display = "";
-    });
     pendBottom = true;
     inputtedMessage = "";
+    const toUpload = [...uploadedFiles];
+    uploadedFiles.splice(0);
+    uploadedFiles = uploadedFiles;
+    const attachments: string[] = [];
+    for (const attachment of toUpload) {
+      try {
+        const id = await uploadAttachment(attachment.name, attachment.data);
+        if (id) attachments.push(id);
+      } catch (err) {
+        console.error("no attachment", err);
+      }
+    }
+    const message = await SelectedChannel.sendMessage({
+      content,
+      attachments: attachments.length ? attachments : null,
+    });
+    sendButton.classList.remove("loading");
+    fc.style.display = "";
+    pendBottom = true;
   }
 
   onMount(() => {
@@ -288,7 +305,7 @@
       bind:this={PaneMessages}
     >
       {#if SelectedChannel}
-        <div class="overflow-y-auto flex-1 flex flex-col break-words" bind:this={ListMessages}>
+        <div class="overflow-y-auto flex-1 flex flex-col break-words p-1" bind:this={ListMessages}>
           {#if MessageCache[SelectedChannel._id]?.length}
             {#each MessageCache[SelectedChannel._id].slice(-75) as message}
               <div class="mb-3 last:mb-0">
@@ -366,20 +383,67 @@
             ...
           {/if}
         </div>
+        {#if uploadedFiles.length}
+          <div
+            class="bg-slate-900 flex py-2 overflow-x-auto w-full"
+            style="height:20%;background-color:{themeSettings['primary-header']};"
+          >
+            {#each uploadedFiles as file}
+              <div
+                class="relative rounded bg-white bg-opacity-25 flex items-center justify-center mx-1 h-full cursor-pointer"
+                on:click={() => {
+                  const i = uploadedFiles.indexOf(file);
+                  if (i >= 0) uploadedFiles.splice(i, 1);
+                  URL.revokeObjectURL(file.url);
+                  uploadedFiles = uploadedFiles;
+                }}
+              >
+                {#if file.type == "image"}
+                  <img src={file.url} alt={file.name} class="h-full rounded" />
+                {:else}
+                  <div class="m-1.5">{file.name}</div>
+                {/if}
+                <div
+                  class="rounded absolute top-0 left-0 h-full w-full bg-black bg-opacity-40 flex items-center justify-center text-error"
+                >
+                  <CircleX />
+                </div>
+              </div>
+            {/each}
+          </div>
+        {/if}
         <div
-          class="bg-slate-800 h-12 flex"
+          class="bg-slate-800 h-12 flex w-full"
           style="background-color:{themeSettings['message-box']};"
         >
-          <input type="file" class="hidden" bind:this={fileInput} />
+          <input
+            type="file"
+            class="hidden"
+            bind:this={fileInput}
+            multiple
+            on:input={() => {
+              const files = [...(fileInput.files || [])];
+              files.forEach((file) => {
+                if (uploadedFiles.length >= 5) return;
+                uploadedFiles.push({
+                  name: file.name,
+                  type: file.type.split("/")[0],
+                  url: URL.createObjectURL(file),
+                  data: file,
+                });
+                uploadedFiles = uploadedFiles;
+              });
+            }}
+          />
           <div
-            class="btn btn-square btn-primary rounded-none border-none"
+            class="btn btn-square btn-secondary rounded-none border-none"
             style="background-color:{themeSettings['primary-header']};"
             on:click={() => fileInput.click()}
           >
             <Paperclip />
           </div>
           <input
-            class="flex-1 bg-inherit"
+            class="flex-1 bg-inherit p-1"
             type="text"
             autocomplete="on"
             bind:this={MessageInput}
@@ -391,10 +455,7 @@
           <div
             class="btn btn-square btn-primary rounded-none border-none"
             style="background-color:{themeSettings['accent']};"
-            on:click={() => (
-              document.activeElement?.tagName !== "INPUT" && (selectInput = MessageInput),
-              sendMessage()
-            )}
+            on:click={() => sendMessage()}
             bind:this={sendButton}
           >
             <ArrowBigRightLine />

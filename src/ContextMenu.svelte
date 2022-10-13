@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { ThemeSettings } from "util";
+  import type { ThemeSettings } from "./util";
 
   export let position: { left?: number; right?: number; top?: number; bottom?: number };
   export let options: {
