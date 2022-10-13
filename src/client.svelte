@@ -202,12 +202,17 @@
               <div
                 class="flex items-center p-2 m-2 rounded bg-black bg-opacity-20 cursor-pointer"
                 style="background-color:{themeSettings['hover']};"
-                on:click={() => (
-                  (SelectedServer = server),
-                  !fetchedMembers.has(SelectedServer._id) &&
-                    (fetchedMembers.add(SelectedServer._id),
-                    SelectedServer.fetchMembers().then(() => (MessageCache = MessageCache)))
-                )}
+                on:click={() => {
+                  SelectedServer = server;
+                  if (!fetchedMembers.has(SelectedServer._id)) {
+                    fetchedMembers.add(SelectedServer._id);
+                    if (SelectedServer._id == "01F7ZSBSFHQ8TA81725KQCSDDP")
+                      return alert(
+                        "Revolt Lounge member fetching is disabled. (crashes app)\nThink you can fix it? Make a pull request! itzTheMeow/revolt-phone-pwa on GitHub."
+                      );
+                    SelectedServer.fetchMembers().then(() => (MessageCache = MessageCache));
+                  }
+                }}
               >
                 <div class="avatar mr-2">
                   <div class="w-5 rounded-full">
