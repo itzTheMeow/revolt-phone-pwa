@@ -366,10 +366,13 @@
                           ':' +
                           Math.floor(
                             Math.min(
-                              //@ts-ignore
-                              (window.innerWidth * 0.9) / attachment.metadata.width,
-                              //@ts-ignore
-                              (window.innerHeight * 0.7) / attachment.metadata.height
+                              1,
+                              Math.min(
+                                //@ts-ignore
+                                (window.innerWidth * 0.9) / attachment.metadata.width,
+                                //@ts-ignore
+                                (window.innerHeight * 0.7) / attachment.metadata.height
+                              )
                             ) *
                               //@ts-ignore
                               attachment.metadata[h]
