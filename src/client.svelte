@@ -98,8 +98,6 @@
   });
 
   async function sendMessage() {
-    if (document.activeElement?.tagName == "INPUT")
-      selectInput = document.activeElement as HTMLInputElement;
     if (!SelectedChannel || (!inputtedMessage && !uploadedFiles.length)) {
       if (selectInput) {
         selectInput.focus();
@@ -455,7 +453,13 @@
           <div
             class="btn btn-square btn-primary rounded-none border-none"
             style="background-color:{themeSettings['accent']};"
-            on:click={() => sendMessage()}
+            on:touchstart={() => {
+              //@ts-ignore
+              if (document.activeElement?.tagName == "INPUT") selectInput = document.activeElement;
+            }}
+            on:click={() => {
+              sendMessage();
+            }}
             bind:this={sendButton}
           >
             <ArrowBigRightLine />
