@@ -189,6 +189,19 @@
       MessageInput.selectionStart || 0
     );
   }
+  function handleAutocomplete(e: KeyboardEvent) {
+    if (autocomplete?.size && (e.key == "Enter" || e.key == "Tab")) {
+      e.preventDefault();
+      handleAutocompleteTab(
+        autocomplete.tab(
+          [...autocomplete.channels, ...autocomplete.emojis, ...autocomplete.users][0]
+        )
+      );
+      recalculateAutocomplete();
+      return true;
+    }
+    return false;
+  }
   function handleAutocompleteTab(res: AutocompleteTabResult | undefined) {
     if (!res) return;
     inputtedMessage = res.text;
@@ -541,18 +554,9 @@
             autocomplete="on"
             bind:this={MessageInput}
             bind:value={inputtedMessage}
-            on:keydown={(e) => {
-              if (autocomplete?.size && (e.key == "Enter" || e.key == "Tab")) {
-                e.preventDefault();
-                handleAutocompleteTab(
-                  autocomplete.tab(
-                    [...autocomplete.channels, ...autocomplete.emojis, ...autocomplete.users][0]
-                  )
-                );
-                recalculateAutocomplete();
-              }
-            }}
+            on:keydown={handleAutocomplete}
             on:keyup={(e) => {
+              if (handleAutocomplete(e)) return;
               if (e.key == "Enter") sendMessage();
               recalculateAutocomplete();
             }}
