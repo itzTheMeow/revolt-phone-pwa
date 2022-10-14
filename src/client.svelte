@@ -563,7 +563,9 @@
             on:touchmove={() => recalculateAutocomplete()}
             on:touchend={() => recalculateAutocomplete()}
             on:mouseup={() => recalculateAutocomplete()}
+            on:click={() => (MessageInputSelected = true)}
             on:focus={() => (MessageInputSelected = true)}
+            on:focusin={() => (MessageInputSelected = true)}
             on:blur={() => (MessageInputSelected = false)}
           />
           <div
