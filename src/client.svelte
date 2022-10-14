@@ -18,7 +18,9 @@
   import { escapeHTML, escapeRegex, Matches, proxyURL, type ThemeSettings } from "./util";
   import TWEEN from "@tweenjs/tween.js";
   import ContextMenu from "ContextMenu.svelte";
-  import { uploadAttachment } from "revolt-toolset";
+  import { uploadAttachment, parseAutocomplete } from "revolt-toolset";
+  import type { AutocompleteResult, AutocompleteTabResult } from "revolt-toolset/dist/autocomplete";
+  import AutocompleteItem from "AutocompleteItem.svelte";
 
   function logout() {
     localStorage.removeItem("session");
@@ -88,7 +90,7 @@
     }
     if (previous == document.body.innerHTML) return;
     previous = document.body.innerHTML;
-    [ListServers, ListChannels, ListMessages].forEach(
+    [ListServers, ListChannels, ListMessages, AutocompletePanel].forEach(
       (e) => e && disableBodyScroll(e, { allowTouchMove: () => true })
     );
     if (selectInput) {
@@ -176,9 +178,23 @@
       isSliding = false;
     });
   });
-  function attachLoad(e: Event) {
-    const item = e.target as HTMLElement;
-    //ListMessages.scrollTop += item.getBoundingClientRect().height;
+  let MessageInputSelected = false,
+    autocomplete: AutocompleteResult | null,
+    AutocompletePanel: HTMLDivElement;
+  function recalculateAutocomplete() {
+    if (!MessageInputSelected) return (autocomplete = null);
+    autocomplete = parseAutocomplete(
+      SelectedServer,
+      inputtedMessage,
+      MessageInput.selectionStart || 0
+    );
+  }
+  function handleAutocompleteTab(res: AutocompleteTabResult | undefined) {
+    if (!res) return;
+    inputtedMessage = res.text;
+    MessageInput.focus();
+    MessageInput.setSelectionRange(res.newCursor, res.newCursor);
+    recalculateAutocomplete();
   }
 </script>
 
@@ -391,7 +407,6 @@
                           "image"
                         )}
                         alt={attachment.filename}
-                        on:load={attachLoad}
                       />
                     {:else if attachment.metadata.type == "Video"}
                       <!-- svelte-ignore a11y-media-has-caption -->
@@ -400,7 +415,6 @@
                         src={proxyURL(client.generateFileURL(attachment), "any")}
                         alt={attachment.filename}
                         controls
-                        on:load={attachLoad}
                       />
                     {:else if attachment.metadata.type == "Audio"}
                       <audio
@@ -408,7 +422,6 @@
                         src={proxyURL(client.generateFileURL(attachment), "any")}
                         alt={attachment.filename}
                         controls
-                        on:load={attachLoad}
                       />
                     {:else}
                       <a href={client.generateFileURL(attachment)} target="_blank"
@@ -452,6 +465,45 @@
             {/each}
           </div>
         {/if}
+        {#if autocomplete?.size}
+          <div
+            class="bg-slate-900 flex overflow-y-auto py-2 w-full flex-col"
+            style="max-height:35%;background-color:{themeSettings['primary-header']};"
+            bind:this={AutocompletePanel}
+          >
+            {#each autocomplete.channels.slice(0, 15) as c}
+              <AutocompleteItem
+                icon={proxyURL(c.generateIconURL({ max_side: 64 }), "image") ||
+                  (c.channel_type == "VoiceChannel" ? Volume : Hash)}
+                name={c.name || ""}
+                onclick={() => handleAutocompleteTab(autocomplete?.tab(c))}
+              />
+            {/each}
+            {#each autocomplete.emojis.slice(0, 15) as e}
+              <AutocompleteItem
+                icon={proxyURL(e.imageURL, "image")}
+                name={e.name || ""}
+                detail={e.parent.type == "Server"
+                  ? client.servers.get(e.parent.id)?.name || ""
+                  : ""}
+                onclick={() => handleAutocompleteTab(autocomplete?.tab(e))}
+              />
+            {/each}
+            {#each autocomplete.users.slice(0, 15) as u}
+              <AutocompleteItem
+                icon={proxyURL(
+                  u.generateAvatarURL({ max_side: 64 }) ||
+                    u.user?.generateAvatarURL({ max_side: 64 }),
+                  "image"
+                )}
+                name={u.nickname || u.user?.username || ""}
+                detail={u.user?.username || ""}
+                rounded
+                onclick={() => handleAutocompleteTab(autocomplete?.tab(u))}
+              />
+            {/each}
+          </div>
+        {/if}
         <div
           class="bg-slate-800 h-12 flex w-full"
           style="background-color:{themeSettings['message-box']};"
@@ -484,13 +536,31 @@
           </div>
           <input
             class="flex-1 bg-inherit p-1"
+            style="outline:none;"
             type="text"
             autocomplete="on"
             bind:this={MessageInput}
             bind:value={inputtedMessage}
+            on:keydown={(e) => {
+              if (autocomplete?.size && (e.key == "Enter" || e.key == "Tab")) {
+                e.preventDefault();
+                handleAutocompleteTab(
+                  autocomplete.tab(
+                    [...autocomplete.channels, ...autocomplete.emojis, ...autocomplete.users][0]
+                  )
+                );
+                recalculateAutocomplete();
+              }
+            }}
             on:keyup={(e) => {
               if (e.key == "Enter") sendMessage();
+              recalculateAutocomplete();
             }}
+            on:touchmove={() => recalculateAutocomplete()}
+            on:touchend={() => recalculateAutocomplete()}
+            on:mouseup={() => recalculateAutocomplete()}
+            on:focus={() => (MessageInputSelected = true)}
+            on:blur={() => (MessageInputSelected = false)}
           />
           <div
             class="btn btn-square btn-primary rounded-none border-none"
