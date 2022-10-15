@@ -224,6 +224,7 @@ export default class VoiceClient extends EventEmitter<VoiceEvents> {
         consumers.audio = consumer;
     }
 
+    alert(!!consumer.track);
     const mediaStream = new MediaStream([consumer.track]);
     const audio = new Audio();
     audio.srcObject = mediaStream;
