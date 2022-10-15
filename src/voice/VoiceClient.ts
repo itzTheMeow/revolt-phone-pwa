@@ -229,6 +229,8 @@ export default class VoiceClient extends EventEmitter<VoiceEvents> {
     audio.srcObject = mediaStream;
     await this.signaling.setConsumerPause(consumer.id, false);
     audio.play();
+    audio.style.display = "none";
+    document.body.appendChild(audio);
     this.consumers.set(userId, consumers);
   }
 
