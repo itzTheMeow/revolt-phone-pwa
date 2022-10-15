@@ -228,17 +228,19 @@ export default class VoiceClient extends EventEmitter<VoiceEvents> {
     const audio = new Audio();
     audio.srcObject = mediaStream;
     audio.load();
+    audio.play();
     await this.signaling.setConsumerPause(consumer.id, false);
     this.consumers.set(userId, consumers);
+    audio.onplay = () => playbtn?.remove();
     const playbtn = document.createElement("div");
     playbtn.innerText = "Click to play audio.";
     playbtn.className = "btn btn-primary absolute";
     playbtn.style.top = "30%";
-    playbtn.style.left = "0px";
+    playbtn.style.left = "50%";
+    playbtn.style.transform = "translateX(-50%)";
     document.body.appendChild(playbtn);
     playbtn.onclick = () => {
       audio.play();
-      playbtn.remove();
     };
   }
 
