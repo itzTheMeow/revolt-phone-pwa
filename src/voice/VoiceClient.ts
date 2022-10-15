@@ -228,7 +228,7 @@ export default class VoiceClient extends EventEmitter<VoiceEvents> {
     const audio = new Audio();
     audio.srcObject = mediaStream;
     await this.signaling.setConsumerPause(consumer.id, false);
-    audio.play();
+    audio.play().then(() => (audio.pause(), audio.play()));
     this.consumers.set(userId, consumers);
   }
 
