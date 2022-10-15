@@ -225,10 +225,9 @@ export default class VoiceClient extends EventEmitter<VoiceEvents> {
     }
 
     const mediaStream = new MediaStream([consumer.track]);
-    const audio = new Audio();
+    const audio = new ((window as any).webkitAudio || Audio)();
     audio.srcObject = mediaStream;
     await this.signaling.setConsumerPause(consumer.id, false);
-    audio.play().then(() => (audio.pause(), audio.play()));
     this.consumers.set(userId, consumers);
   }
 
