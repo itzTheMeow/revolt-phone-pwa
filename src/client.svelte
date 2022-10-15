@@ -230,7 +230,9 @@
             {#each [...client.servers.values()].sort( (s1, s2) => (s1.name.toLowerCase() > s2.name.toLowerCase() ? 1 : -1) ) as server}
               <div
                 class="flex items-center p-2 m-2 rounded bg-black bg-opacity-20 cursor-pointer"
-                style="background-color:{themeSettings['hover']};"
+                style="background-color:{themeSettings['hover']};{SelectedServer?._id == server._id
+                  ? `border: 1px solid ${themeSettings['accent']};`
+                  : ''}"
                 on:click={() => {
                   SelectedServer = server;
                   if (!fetchedMembers.has(SelectedServer._id)) {
