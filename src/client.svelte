@@ -14,13 +14,19 @@
     ArrowBigRightLine,
     Paperclip,
     CircleX,
+    PhoneCall,
+    Microphone,
+    MicrophoneOff,
+    Headphones,
+    HeadphonesOff,
+    PhoneOff,
   } from "tabler-icons-svelte";
-  import { escapeHTML, escapeRegex, Matches, proxyURL, type ThemeSettings } from "./util";
+  import { escapeHTML, escapeRegex, Matches, proxyURL } from "./util";
   import TWEEN from "@tweenjs/tween.js";
-  import ContextMenu from "ContextMenu.svelte";
-  import { uploadAttachment, parseAutocomplete } from "revolt-toolset";
+  import { uploadAttachment, parseAutocomplete, type ThemeSettings } from "revolt-toolset";
   import type { AutocompleteResult, AutocompleteTabResult } from "revolt-toolset/dist/autocomplete";
   import AutocompleteItem from "AutocompleteItem.svelte";
+  import { voiceState as VOICE_STATE, VoiceStatus } from "./voice/VoiceState";
 
   function logout() {
     localStorage.removeItem("session");
@@ -209,6 +215,9 @@
     MessageInput.setSelectionRange(res.newCursor, res.newCursor);
     recalculateAutocomplete();
   }
+
+  let voiceState = VOICE_STATE;
+  VOICE_STATE.events.on("stateChange", () => (voiceState = voiceState));
 </script>
 
 <div
@@ -343,251 +352,367 @@
       bind:this={PaneMessages}
     >
       {#if SelectedChannel}
-        <div
-          class="overflow-y-auto flex-1 flex flex-col break-words p-1.5"
-          bind:this={ListMessages}
-        >
-          {#if MessageCache[SelectedChannel._id]?.length}
-            {#each MessageCache[SelectedChannel._id].slice(-75) as message}
-              <div>
-                {#if MessageCache[SelectedChannel._id][MessageCache[SelectedChannel._id].indexOf(message) - 1]?.author_id !== message.author_id}
-                  <div
-                    class="font-semibold mt-2"
-                    style="color:{message.masquerade?.colour ||
-                      message.member?.orderedRoles.find((r) => r[1].colour)?.[1].colour ||
-                      'inherit'};"
-                  >
-                    {message.masquerade?.name ||
-                      message.member?.nickname ||
-                      message.author?.username}
+        {#if SelectedChannel.channel_type !== "VoiceChannel"}
+          <div
+            class="overflow-y-auto flex-1 flex flex-col break-words p-1.5"
+            bind:this={ListMessages}
+          >
+            {#if MessageCache[SelectedChannel._id]?.length}
+              {#each MessageCache[SelectedChannel._id].slice(-75) as message}
+                <div>
+                  {#if MessageCache[SelectedChannel._id][MessageCache[SelectedChannel._id].indexOf(message) - 1]?.author_id !== message.author_id}
+                    <div
+                      class="font-semibold mt-2"
+                      style="color:{message.masquerade?.colour ||
+                        message.member?.orderedRoles.find((r) => r[1].colour)?.[1].colour ||
+                        'inherit'};"
+                    >
+                      {message.masquerade?.name ||
+                        message.member?.nickname ||
+                        message.author?.username}
+                    </div>
+                  {/if}
+                  <div class="whitespace-pre-wrap">
+                    {@html escapeHTML(message.content || "")
+                      .replace(escapeRegex(Matches.user), (_, id) => {
+                        const u = client.users.get(id);
+                        return `<span style="color:${themeSettings["accent"]};">@${escapeHTML(
+                          u?.username || "Unknown User"
+                        )}</span>`;
+                      })
+                      .replace(escapeRegex(Matches.channel), (_, id) => {
+                        const c = SelectedServer.channels.find((c) => c?._id == id);
+                        return `<span style="color:${themeSettings["accent"]};">#${escapeHTML(
+                          c?.name || "unknown-channel"
+                        )}</span>`;
+                      })
+                      .replace(escapeRegex(Matches.emojiCustom), (_, id) => {
+                        const e = client.emojis.get(id);
+                        if (!e) return _;
+                        return `<img src="${proxyURL(
+                          e.imageURL,
+                          "image"
+                        )}" class="inline object-contain ${
+                          message.content == _ ? "h-12 w-12" : "h-5 w-5"
+                        } -mx-0.5 align-middle" />`;
+                      })}
                   </div>
-                {/if}
-                <div class="whitespace-pre-wrap">
-                  {@html escapeHTML(message.content || "")
-                    .replace(escapeRegex(Matches.user), (_, id) => {
-                      const u = client.users.get(id);
-                      return `<span style="color:${themeSettings["accent"]};">@${escapeHTML(
-                        u?.username || "Unknown User"
-                      )}</span>`;
-                    })
-                    .replace(escapeRegex(Matches.channel), (_, id) => {
-                      const c = SelectedServer.channels.find((c) => c?._id == id);
-                      return `<span style="color:${themeSettings["accent"]};">#${escapeHTML(
-                        c?.name || "unknown-channel"
-                      )}</span>`;
-                    })
-                    .replace(escapeRegex(Matches.emojiCustom), (_, id) => {
-                      const e = client.emojis.get(id);
-                      if (!e) return _;
-                      return `<img src="${proxyURL(
-                        e.imageURL,
-                        "image"
-                      )}" class="inline object-contain ${
-                        message.content == _ ? "h-12 w-12" : "h-5 w-5"
-                      } -mx-0.5 align-middle" />`;
-                    })}
-                </div>
-                {#each message.attachments || [] as attachment}
-                  <div
-                    class="rounded mt-2 block"
-                    style="max-width:90vw;{['width', 'height']
-                      .map(
-                        (h) =>
-                          h +
-                          ':' +
-                          Math.floor(
-                            Math.min(
-                              1,
+                  {#each message.attachments || [] as attachment}
+                    <div
+                      class="rounded mt-2 block"
+                      style="max-width:90vw;{['width', 'height']
+                        .map(
+                          (h) =>
+                            h +
+                            ':' +
+                            Math.floor(
                               Math.min(
+                                1,
+                                Math.min(
+                                  //@ts-ignore
+                                  (window.innerWidth * 0.9) / attachment.metadata.width,
+                                  //@ts-ignore
+                                  (window.innerHeight * 0.7) / attachment.metadata.height
+                                )
+                              ) *
                                 //@ts-ignore
-                                (window.innerWidth * 0.9) / attachment.metadata.width,
-                                //@ts-ignore
-                                (window.innerHeight * 0.7) / attachment.metadata.height
-                              )
-                            ) *
-                              //@ts-ignore
-                              attachment.metadata[h]
-                          ) +
-                          'px'
-                      )
-                      .join(';')}"
+                                attachment.metadata[h]
+                            ) +
+                            'px'
+                        )
+                        .join(';')}"
+                    >
+                      {#if attachment.metadata.type == "Image"}
+                        <img
+                          class="block rounded"
+                          src={proxyURL(
+                            client.generateFileURL(attachment, {
+                              width: Math.floor(window.innerWidth * 0.9),
+                            }),
+                            "image"
+                          )}
+                          alt={attachment.filename}
+                        />
+                      {:else if attachment.metadata.type == "Video"}
+                        <!-- svelte-ignore a11y-media-has-caption -->
+                        <video
+                          class="block"
+                          src={proxyURL(client.generateFileURL(attachment), "any")}
+                          alt={attachment.filename}
+                          controls
+                        />
+                      {:else if attachment.metadata.type == "Audio"}
+                        <audio
+                          class="block"
+                          src={proxyURL(client.generateFileURL(attachment), "any")}
+                          alt={attachment.filename}
+                          controls
+                        />
+                      {:else}
+                        <a href={client.generateFileURL(attachment)} target="_blank"
+                          >Download {attachment.filename}</a
+                        >
+                      {/if}
+                    </div>
+                  {/each}
+                </div>
+              {/each}
+            {:else}
+              ...
+            {/if}
+          </div>
+          {#if uploadedFiles.length}
+            <div
+              class="bg-slate-900 flex py-2 overflow-x-auto w-full"
+              style="height:20%;background-color:{themeSettings['primary-header']};"
+            >
+              {#each uploadedFiles as file}
+                <div
+                  class="relative rounded bg-white bg-opacity-25 flex items-center justify-center mx-1 h-full cursor-pointer"
+                  on:click={() => {
+                    const i = uploadedFiles.indexOf(file);
+                    if (i >= 0) uploadedFiles.splice(i, 1);
+                    URL.revokeObjectURL(file.url);
+                    uploadedFiles = uploadedFiles;
+                  }}
+                >
+                  {#if file.type == "image"}
+                    <img src={file.url} alt={file.name} class="h-full rounded" />
+                  {:else}
+                    <div class="m-1.5">{file.name}</div>
+                  {/if}
+                  <div
+                    class="rounded absolute top-0 left-0 h-full w-full bg-black bg-opacity-25 flex items-center justify-center text-error"
                   >
-                    {#if attachment.metadata.type == "Image"}
+                    <CircleX />
+                  </div>
+                </div>
+              {/each}
+            </div>
+          {/if}
+          {#if autocomplete?.size}
+            <div
+              class="bg-slate-900 overflow-y-auto py-2 w-full"
+              style="max-height:35%;background-color:{themeSettings['primary-header']};"
+              bind:this={AutocompletePanel}
+            >
+              {#each autocomplete.channels.slice(0, 15) as c}
+                <AutocompleteItem
+                  icon={c.icon
+                    ? proxyURL(c.generateIconURL({ max_side: 64 }), "image")
+                    : c.channel_type == "VoiceChannel"
+                    ? Volume
+                    : Hash}
+                  name={c.name || ""}
+                  onclick={() => handleAutocompleteTab(autocomplete?.tab(c))}
+                />
+              {/each}
+              {#each autocomplete.emojis.slice(0, 15) as e}
+                <AutocompleteItem
+                  icon={proxyURL(e.imageURL, "image")}
+                  name={e.name || ""}
+                  detail={e.parent.type == "Server"
+                    ? client.servers.get(e.parent.id)?.name || ""
+                    : ""}
+                  onclick={() => handleAutocompleteTab(autocomplete?.tab(e))}
+                />
+              {/each}
+              {#each autocomplete.users.slice(0, 15) as u}
+                <AutocompleteItem
+                  icon={proxyURL(
+                    u.generateAvatarURL({ max_side: 64 }) ||
+                      u.user?.generateAvatarURL({ max_side: 64 }),
+                    "image"
+                  )}
+                  name={u.nickname || u.user?.username || ""}
+                  detail={u.user?.username || ""}
+                  rounded
+                  onclick={() => handleAutocompleteTab(autocomplete?.tab(u))}
+                />
+              {/each}
+            </div>
+          {/if}
+          <div
+            class="bg-slate-800 h-12 flex w-full"
+            style="background-color:{themeSettings['message-box']};"
+          >
+            <input
+              type="file"
+              class="hidden"
+              bind:this={fileInput}
+              multiple
+              on:change={() => {
+                const files = [...(fileInput.files || [])];
+                files.forEach((file) => {
+                  if (uploadedFiles.length >= 5) return;
+                  uploadedFiles.push({
+                    name: file.name,
+                    type: file.type.split("/")[0],
+                    url: URL.createObjectURL(file),
+                    data: file,
+                  });
+                  uploadedFiles = uploadedFiles;
+                });
+              }}
+            />
+            <div
+              class="btn btn-square btn-secondary rounded-none border-none"
+              style="background-color:{themeSettings['primary-header']};"
+              on:click={() => fileInput.click()}
+            >
+              <Paperclip />
+            </div>
+            <input
+              class="flex-1 bg-inherit p-1"
+              style="outline:none;"
+              type="text"
+              autocomplete="on"
+              bind:this={MessageInput}
+              bind:value={inputtedMessage}
+              on:keydown={handleAutocomplete}
+              on:keyup={(e) => {
+                if (handleAutocomplete(e)) return;
+                if (e.key == "Enter") sendMessage();
+                recalculateAutocomplete();
+              }}
+              on:touchmove={() => recalculateAutocomplete()}
+              on:touchend={() => recalculateAutocomplete()}
+              on:mouseup={() => recalculateAutocomplete()}
+              on:click={() => (MessageInputSelected = true)}
+              on:focus={() => (MessageInputSelected = true)}
+              on:focusin={() => (MessageInputSelected = true)}
+              on:blur={() => (MessageInputSelected = false)}
+            />
+            <div
+              class="btn btn-square btn-primary rounded-none border-none"
+              style="background-color:{themeSettings['accent']};"
+              on:touchstart={() => {
+                if (document.activeElement?.tagName == "INPUT")
+                  //@ts-ignore
+                  selectInput = document.activeElement;
+              }}
+              on:click={() => {
+                sendMessage();
+              }}
+              bind:this={sendButton}
+            >
+              <ArrowBigRightLine />
+            </div>
+          </div>
+        {:else}
+          <div class="flex flex-col items-center justify-center w-full h-full">
+            {#await voiceState.loadVoice()}
+              <div>Loading...</div>
+            {:then _}
+              <div class="mb-auto mt-3 text-lg font-semibold">{SelectedChannel.name}</div>
+              {#if voiceState.status == VoiceStatus.CONNECTED}
+                <div class="flex">
+                  {#each [...voiceState.participants.keys()] as uid}
+                    <div class="relative w-16 h-16 mx-2">
                       <img
-                        class="block rounded"
                         src={proxyURL(
-                          client.generateFileURL(attachment, {
-                            width: Math.floor(window.innerWidth * 0.9),
-                          }),
+                          client.users.get(uid)?.generateAvatarURL({ max_side: 256 }),
                           "image"
                         )}
-                        alt={attachment.filename}
+                        alt={client.users.get(uid)?.username}
+                        class="rounded-full w-full h-full"
                       />
-                    {:else if attachment.metadata.type == "Video"}
-                      <!-- svelte-ignore a11y-media-has-caption -->
-                      <video
-                        class="block"
-                        src={proxyURL(client.generateFileURL(attachment), "any")}
-                        alt={attachment.filename}
-                        controls
-                      />
-                    {:else if attachment.metadata.type == "Audio"}
-                      <audio
-                        class="block"
-                        src={proxyURL(client.generateFileURL(attachment), "any")}
-                        alt={attachment.filename}
-                        controls
-                      />
-                    {:else}
-                      <a href={client.generateFileURL(attachment)} target="_blank"
-                        >Download {attachment.filename}</a
-                      >
-                    {/if}
-                  </div>
-                {/each}
-              </div>
-            {/each}
-          {:else}
-            ...
-          {/if}
-        </div>
-        {#if uploadedFiles.length}
-          <div
-            class="bg-slate-900 flex py-2 overflow-x-auto w-full"
-            style="height:20%;background-color:{themeSettings['primary-header']};"
-          >
-            {#each uploadedFiles as file}
-              <div
-                class="relative rounded bg-white bg-opacity-25 flex items-center justify-center mx-1 h-full cursor-pointer"
-                on:click={() => {
-                  const i = uploadedFiles.indexOf(file);
-                  if (i >= 0) uploadedFiles.splice(i, 1);
-                  URL.revokeObjectURL(file.url);
-                  uploadedFiles = uploadedFiles;
-                }}
-              >
-                {#if file.type == "image"}
-                  <img src={file.url} alt={file.name} class="h-full rounded" />
-                {:else}
-                  <div class="m-1.5">{file.name}</div>
-                {/if}
-                <div
-                  class="rounded absolute top-0 left-0 h-full w-full bg-black bg-opacity-25 flex items-center justify-center text-error"
-                >
-                  <CircleX />
+                      {#if (client.user?._id === uid && voiceState.isDeaf()) || !voiceState.participants.get(uid)?.audio}
+                        <div class="absolute right-0 bottom-0 p-1 bg-error rounded-full">
+                          {#if client.user?._id === uid && voiceState.isDeaf()}
+                            <HeadphonesOff size={14} />
+                          {:else if !voiceState.participants.get(uid)?.audio}
+                            <MicrophoneOff size={14} />
+                          {/if}
+                        </div>
+                      {/if}
+                    </div>
+                  {/each}
                 </div>
+              {:else if voiceState.status == VoiceStatus.LOADING}
+                <div>Loading...</div>
+              {:else if voiceState.status == VoiceStatus.AUTHENTICATING}
+                <div>Authenticating...</div>
+              {:else if voiceState.status == VoiceStatus.CONNECTING}
+                <div>Connecting...</div>
+              {:else if voiceState.status == VoiceStatus.RTC_CONNECTING}
+                <div>RTC Connecting...</div>
+              {/if}
+              <div class="mt-auto mb-4 flex items-center">
+                {#if voiceState.status == VoiceStatus.READY}
+                  <div
+                    class="p-3 bg-success inline-flex items-center justify-center rounded-full cursor-pointer"
+                    on:click={async () => {
+                      try {
+                        await voiceState.connect(SelectedChannel);
+                      } catch (err) {
+                        alert("WebRTC is probably not enabled in settings!\n" + err);
+                      }
+                    }}
+                  >
+                    <PhoneCall size={20} />
+                  </div>
+                {:else if voiceState.status == VoiceStatus.CONNECTED}
+                  {#if voiceState.isProducing("audio")}
+                    <div
+                      class="p-3 bg-slate-900 inline-flex items-center justify-center rounded-full cursor-pointer"
+                      style="background-color:{themeSettings['tooltip']};"
+                      on:click={async () => {
+                        await voiceState.stopProducing("audio");
+                        voiceState = voiceState;
+                      }}
+                    >
+                      <Microphone size={20} />
+                    </div>
+                  {:else}
+                    <div
+                      class="p-3 bg-slate-900 inline-flex items-center justify-center rounded-full cursor-pointer"
+                      style="background-color:{themeSettings['tooltip']};"
+                      on:click={async () => {
+                        await voiceState.startProducing("audio");
+                        voiceState = voiceState;
+                      }}
+                    >
+                      <MicrophoneOff size={20} />
+                    </div>
+                  {/if}
+                  {#if voiceState.isDeaf()}
+                    <div
+                      class="mx-1.5 p-3 bg-slate-900 inline-flex items-center justify-center rounded-full cursor-pointer"
+                      style="background-color:{themeSettings['tooltip']};"
+                      on:click={async () => {
+                        await voiceState.stopDeafen();
+                        voiceState = voiceState;
+                      }}
+                    >
+                      <HeadphonesOff size={20} />
+                    </div>
+                  {:else}
+                    <div
+                      class="mx-1.5 p-3 bg-slate-900 inline-flex items-center justify-center rounded-full cursor-pointer"
+                      style="background-color:{themeSettings['tooltip']};"
+                      on:click={async () => {
+                        await voiceState.startDeafen();
+                        voiceState = voiceState;
+                      }}
+                    >
+                      <Headphones size={20} />
+                    </div>
+                  {/if}
+                  <div
+                    class="p-3 bg-error inline-flex items-center justify-center rounded-full cursor-pointer"
+                    on:click={async () => {
+                      voiceState.disconnect();
+                      voiceState = voiceState;
+                    }}
+                  >
+                    <PhoneOff size={20} />
+                  </div>
+                {/if}
               </div>
-            {/each}
+            {/await}
           </div>
         {/if}
-        {#if autocomplete?.size}
-          <div
-            class="bg-slate-900 overflow-y-auto py-2 w-full"
-            style="max-height:35%;background-color:{themeSettings['primary-header']};"
-            bind:this={AutocompletePanel}
-          >
-            {#each autocomplete.channels.slice(0, 15) as c}
-              <AutocompleteItem
-                icon={c.icon
-                  ? proxyURL(c.generateIconURL({ max_side: 64 }), "image")
-                  : c.channel_type == "VoiceChannel"
-                  ? Volume
-                  : Hash}
-                name={c.name || ""}
-                onclick={() => handleAutocompleteTab(autocomplete?.tab(c))}
-              />
-            {/each}
-            {#each autocomplete.emojis.slice(0, 15) as e}
-              <AutocompleteItem
-                icon={proxyURL(e.imageURL, "image")}
-                name={e.name || ""}
-                detail={e.parent.type == "Server"
-                  ? client.servers.get(e.parent.id)?.name || ""
-                  : ""}
-                onclick={() => handleAutocompleteTab(autocomplete?.tab(e))}
-              />
-            {/each}
-            {#each autocomplete.users.slice(0, 15) as u}
-              <AutocompleteItem
-                icon={proxyURL(
-                  u.generateAvatarURL({ max_side: 64 }) ||
-                    u.user?.generateAvatarURL({ max_side: 64 }),
-                  "image"
-                )}
-                name={u.nickname || u.user?.username || ""}
-                detail={u.user?.username || ""}
-                rounded
-                onclick={() => handleAutocompleteTab(autocomplete?.tab(u))}
-              />
-            {/each}
-          </div>
-        {/if}
-        <div
-          class="bg-slate-800 h-12 flex w-full"
-          style="background-color:{themeSettings['message-box']};"
-        >
-          <input
-            type="file"
-            class="hidden"
-            bind:this={fileInput}
-            multiple
-            on:change={() => {
-              const files = [...(fileInput.files || [])];
-              files.forEach((file) => {
-                if (uploadedFiles.length >= 5) return;
-                uploadedFiles.push({
-                  name: file.name,
-                  type: file.type.split("/")[0],
-                  url: URL.createObjectURL(file),
-                  data: file,
-                });
-                uploadedFiles = uploadedFiles;
-              });
-            }}
-          />
-          <div
-            class="btn btn-square btn-secondary rounded-none border-none"
-            style="background-color:{themeSettings['primary-header']};"
-            on:click={() => fileInput.click()}
-          >
-            <Paperclip />
-          </div>
-          <input
-            class="flex-1 bg-inherit p-1"
-            style="outline:none;"
-            type="text"
-            autocomplete="on"
-            bind:this={MessageInput}
-            bind:value={inputtedMessage}
-            on:keydown={handleAutocomplete}
-            on:keyup={(e) => {
-              if (handleAutocomplete(e)) return;
-              if (e.key == "Enter") sendMessage();
-              recalculateAutocomplete();
-            }}
-            on:touchmove={() => recalculateAutocomplete()}
-            on:touchend={() => recalculateAutocomplete()}
-            on:mouseup={() => recalculateAutocomplete()}
-            on:click={() => (MessageInputSelected = true)}
-            on:focus={() => (MessageInputSelected = true)}
-            on:focusin={() => (MessageInputSelected = true)}
-            on:blur={() => (MessageInputSelected = false)}
-          />
-          <div
-            class="btn btn-square btn-primary rounded-none border-none"
-            style="background-color:{themeSettings['accent']};"
-            on:touchstart={() => {
-              //@ts-ignore
-              if (document.activeElement?.tagName == "INPUT") selectInput = document.activeElement;
-            }}
-            on:click={() => {
-              sendMessage();
-            }}
-            bind:this={sendButton}
-          >
-            <ArrowBigRightLine />
-          </div>
-        </div>
       {:else}
         Select a channel!
       {/if}
