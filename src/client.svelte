@@ -486,8 +486,11 @@
           >
             {#each autocomplete.channels.slice(0, 15) as c}
               <AutocompleteItem
-                icon={proxyURL(c.generateIconURL({ max_side: 64 }), "image") ||
-                  (c.channel_type == "VoiceChannel" ? Volume : Hash)}
+                icon={c.icon
+                  ? proxyURL(c.generateIconURL({ max_side: 64 }), "image")
+                  : c.channel_type == "VoiceChannel"
+                  ? Volume
+                  : Hash}
                 name={c.name || ""}
                 onclick={() => handleAutocompleteTab(autocomplete?.tab(c))}
               />
