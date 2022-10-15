@@ -9,7 +9,7 @@
 </script>
 
 <div
-  class="p-1 bg-white bg-opacity-5 flex items-center rounded mx-2 my-0.5 cursor-pointer"
+  class="p-1 bg-white bg-opacity-5 flex items-center rounded mx-2 my-1.5 cursor-pointer"
   on:click={onclick}
 >
   {#if typeof icon == "string"}
