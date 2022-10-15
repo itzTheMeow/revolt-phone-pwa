@@ -191,9 +191,9 @@ class VoiceStateReference {
   async startProducing(type: ProduceType) {
     switch (type) {
       case "audio": {
-        if (this.client?.audioProducer !== undefined) return console.log("No audio producer."); // ! TODO: let the user know
+        if (this.client?.audioProducer !== undefined) return alert("No audio producer."); // ! TODO: let the user know
 
-        if (navigator.mediaDevices === undefined) return console.log("No media devices."); // ! TODO: let the user know
+        if (navigator.mediaDevices === undefined) return alert("No media devices."); // ! TODO: let the user know
 
         alert(JSON.stringify(navigator.mediaDevices.getSupportedConstraints()));
 
