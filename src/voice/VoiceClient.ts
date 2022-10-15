@@ -239,6 +239,7 @@ export default class VoiceClient extends EventEmitter<VoiceEvents> {
       document.body.appendChild(playbtn);
       playbtn.onclick = () => {
         this.audio.resume();
+        playbtn.remove();
       };
     }
   }
