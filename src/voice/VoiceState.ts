@@ -195,23 +195,16 @@ class VoiceStateReference {
 
         if (navigator.mediaDevices === undefined) return alert("No media devices."); // ! TODO: let the user know
 
-        alert(JSON.stringify(navigator.mediaDevices.getSupportedConstraints()));
-
         const mediaDevice = window.localStorage.getItem("audioInputDevice");
 
         try {
-          alert(
-            JSON.stringify({
-              audio: mediaDevice ? { deviceId: mediaDevice } : true,
-            })
-          );
           const mediaStream = await navigator.mediaDevices.getUserMedia({
             audio: mediaDevice ? { deviceId: mediaDevice } : true,
           });
 
           await this.client?.startProduce(mediaStream.getAudioTracks()[0], "audio");
         } catch (err) {
-          alert(err);
+          alert("WebRTC Error: " + err);
         }
       }
     }
