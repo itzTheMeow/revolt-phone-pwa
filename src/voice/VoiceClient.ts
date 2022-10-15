@@ -226,7 +226,8 @@ export default class VoiceClient extends EventEmitter<VoiceEvents> {
 
     const mediaStream = new MediaStream([consumer.track]);
     const audio = document.createElement("audio");
-    audio.style.display = "none";
+    audio.style.position = "absolute";
+    audio.style.top = "0px";
     document.body.appendChild(audio);
     audio.onplay = () => alert("requested play");
     audio.onplaying = () => alert("playing");
