@@ -226,11 +226,7 @@ export default class VoiceClient extends EventEmitter<VoiceEvents> {
 
     const mediaStream = new MediaStream([consumer.track]);
     const audio = new Audio();
-    audio.srcObject = mediaStream;
-    audio.load();
-    audio.play();
-    await this.signaling.setConsumerPause(consumer.id, false);
-    this.consumers.set(userId, consumers);
+
     audio.onplay = () => playbtn?.remove();
     const playbtn = document.createElement("div");
     playbtn.innerText = "Click to play audio.";
@@ -240,6 +236,13 @@ export default class VoiceClient extends EventEmitter<VoiceEvents> {
     playbtn.style.left = "50%";
     document.body.appendChild(playbtn);
     playbtn.onclick = () => audio.play();
+
+    audio.srcObject = mediaStream;
+    audio.load();
+    audio.play();
+
+    await this.signaling.setConsumerPause(consumer.id, false);
+    this.consumers.set(userId, consumers);
   }
 
   private async stopConsume(userId: string, type?: ProduceType) {
