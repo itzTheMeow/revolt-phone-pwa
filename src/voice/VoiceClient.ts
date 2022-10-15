@@ -239,9 +239,7 @@ export default class VoiceClient extends EventEmitter<VoiceEvents> {
     playbtn.style.left = "50%";
     playbtn.style.transform = "translateX(-50%)";
     document.body.appendChild(playbtn);
-    playbtn.onclick = () => {
-      audio.play();
-    };
+    playbtn.onclick = () => audio.play();
   }
 
   private async stopConsume(userId: string, type?: ProduceType) {
