@@ -227,7 +227,7 @@ export default class VoiceClient extends EventEmitter<VoiceEvents> {
     const mediaStream = new MediaStream([consumer.track]);
     const audio = new Audio();
 
-    audio.onplay = () => playbtn?.remove();
+    audio.onplaying = () => playbtn?.remove();
     const playbtn = document.createElement("div");
     playbtn.innerText = "Click to play audio.";
     playbtn.className = "btn btn-primary absolute";
