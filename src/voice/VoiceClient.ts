@@ -225,6 +225,7 @@ export default class VoiceClient extends EventEmitter<VoiceEvents> {
         consumers.audio = consumer;
     }
 
+    this.audio.onstatechange = () => alert(this.audio.state);
     const mediaStream = new MediaStream([consumer.track]);
     new Audio().srcObject = mediaStream;
     this.audio.createMediaStreamSource(mediaStream).connect(this.audio.destination);
@@ -235,7 +236,7 @@ export default class VoiceClient extends EventEmitter<VoiceEvents> {
       playbtn.innerText = "Click to play audio.";
       playbtn.className = "btn btn-primary absolute";
       playbtn.style.top = "30%";
-      playbtn.style.left = "46%";
+      playbtn.style.left = "0px";
       document.body.appendChild(playbtn);
       playbtn.onclick = () => {
         this.audio.resume();
