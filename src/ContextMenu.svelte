@@ -12,7 +12,7 @@
 </script>
 
 <div
-  class="rounded-md absolute px-2 py-1 select-none"
+  class="rounded-md absolute px-2 py-1.5 select-none"
   style="{Object.entries(position)
     .map((e) => `${e[0]}: ${e[1]}px;`)
     .join('')}background-color:{themeSettings['tooltip']};"

@@ -480,7 +480,7 @@
         {/if}
         {#if autocomplete?.size}
           <div
-            class="bg-slate-900 flex overflow-y-auto py-2 w-full flex-col"
+            class="bg-slate-900 overflow-y-auto py-2 w-full"
             style="max-height:35%;background-color:{themeSettings['primary-header']};"
             bind:this={AutocompletePanel}
           >
