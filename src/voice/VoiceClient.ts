@@ -214,7 +214,6 @@ export default class VoiceClient extends EventEmitter<VoiceEvents> {
     }
   }
 
-  public audio = new (window.AudioContext || (window as any).webkitAudioContext)();
   private async startConsume(userId: string, type: ProduceType) {
     if (this.recvTransport === undefined) throw new Error("Receive transport undefined");
     const consumers = this.consumers.get(userId) || {};
@@ -225,24 +224,23 @@ export default class VoiceClient extends EventEmitter<VoiceEvents> {
         consumers.audio = consumer;
     }
 
-    this.audio.onstatechange = () => alert(this.audio.state);
     const mediaStream = new MediaStream([consumer.track]);
-    new Audio().srcObject = mediaStream;
-    this.audio.createMediaStreamSource(mediaStream).connect(this.audio.destination);
+    const audio = new Audio();
+    audio.onplaying = () => alert("playing");
+    audio.srcObject = mediaStream;
+    audio.load();
     await this.signaling.setConsumerPause(consumer.id, false);
     this.consumers.set(userId, consumers);
-    if (this.audio.state == "suspended") {
-      const playbtn = document.createElement("div");
-      playbtn.innerText = "Click to play audio.";
-      playbtn.className = "btn btn-primary absolute";
-      playbtn.style.top = "30%";
-      playbtn.style.left = "0px";
-      document.body.appendChild(playbtn);
-      playbtn.onclick = () => {
-        this.audio.resume();
-        playbtn.remove();
-      };
-    }
+    const playbtn = document.createElement("div");
+    playbtn.innerText = "Click to play audio.";
+    playbtn.className = "btn btn-primary absolute";
+    playbtn.style.top = "30%";
+    playbtn.style.left = "0px";
+    document.body.appendChild(playbtn);
+    playbtn.onclick = () => {
+      audio.play();
+      playbtn.remove();
+    };
   }
 
   private async stopConsume(userId: string, type?: ProduceType) {
