@@ -46,7 +46,7 @@ class VoiceStateReference {
 
   constructor() {
     this.roomId = null;
-    this.status = VoiceStatus.UNLOADED;
+    this._status = VoiceStatus.UNLOADED;
     this.participants = new Map();
 
     this.syncState = this.syncState.bind(this);
