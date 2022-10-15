@@ -216,7 +216,6 @@ export default class VoiceClient extends EventEmitter<VoiceEvents> {
 
   private async startConsume(userId: string, type: ProduceType) {
     if (this.recvTransport === undefined) throw new Error("Receive transport undefined");
-    alert("play audio");
     const consumers = this.consumers.get(userId) || {};
     const consumerParams = await this.signaling.startConsume(userId, type);
     const consumer = await this.recvTransport.consume(consumerParams);
