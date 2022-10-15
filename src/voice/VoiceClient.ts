@@ -228,6 +228,7 @@ export default class VoiceClient extends EventEmitter<VoiceEvents> {
     const audio = document.createElement("audio");
     audio.style.position = "absolute";
     audio.style.top = "0px";
+    audio.controls = true;
     document.body.appendChild(audio);
     audio.onplay = () => alert("requested play");
     audio.onplaying = () => alert("playing");
