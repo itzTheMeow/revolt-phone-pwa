@@ -232,11 +232,12 @@ export default class VoiceClient extends EventEmitter<VoiceEvents> {
     playbtn.innerText = "Click to play audio.";
     playbtn.className = "btn btn-primary absolute";
     playbtn.style.top = "30%";
-    playbtn.style.transform = "translateX(-50%)";
-    playbtn.style.transition = "none";
-    playbtn.style.left = "50%";
+    playbtn.style.left = window.innerWidth / 2 - playbtn.offsetWidth / 2 + "px";
     document.body.appendChild(playbtn);
-    playbtn.onclick = () => audio.play();
+    playbtn.onclick = () => {
+      playbtn.classList.add("loading");
+      audio.play();
+    };
 
     audio.srcObject = mediaStream;
     audio.load();
