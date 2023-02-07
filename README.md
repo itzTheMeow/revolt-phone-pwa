@@ -4,4 +4,9 @@ A dead simple Revolt PWA. Mainly for iOS users. Supports (and is tested on) down
 
 This isn't meant to be fully featured, just meant to work and allow chatting on dinosaur phones like mine.
 
-A public instance is hosted on [revolt.itsmeow.cat](https://revolt.itsmeow.cat).
+**This project no longer receives updates.**
+
+```
+npm i
+npm start
+```
